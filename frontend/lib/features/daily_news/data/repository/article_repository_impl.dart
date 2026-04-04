@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
 import 'package:news_lab/core/constants/constants.dart';
-import 'package:news_lab/core/resources/data_state.dart';
+import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/daily_news/data/data_sources/local/app_database.dart';
 import 'package:news_lab/features/daily_news/data/data_sources/remote/news_api_service.dart';
 import 'package:news_lab/features/daily_news/data/models/article.dart';
@@ -15,10 +14,12 @@ class ArticleRepositoryImpl implements ArticleRepository {
   final AppDatabase _appDatabase;
   final ArticleFirestoreDataSource _firestoreDataSource;
 
-  ArticleRepositoryImpl(this._newsApiService, this._appDatabase, this._firestoreDataSource);
+  ArticleRepositoryImpl(
+      this._newsApiService, this._appDatabase, this._firestoreDataSource);
 
   @override
-  Future<DataState<List<ArticleEntity>>> getNewsArticles({String? category}) async {
+  Future<Result<List<ArticleEntity>>> getNewsArticles(
+      {String? category}) async {
     try {
       final results = await Future.wait([
         _newsApiService.getNewsArticles(
@@ -32,39 +33,57 @@ class ArticleRepositoryImpl implements ArticleRepository {
       final httpResponse = results[0] as dynamic;
       final firestoreArticles = results[1] as List;
 
-      final firestoreEntities = firestoreArticles.map((a) => ArticleEntity(
-            author: a.author,
-            title: a.title,
-            description: a.description,
-            urlToImage: a.thumbnailUrl,
-            content: a.content,
-            publishedAt: a.publishedAt?.toIso8601String(),
-          )).toList();
+      final firestoreEntities = firestoreArticles
+          .map((a) => ArticleEntity(
+                author: a.author,
+                authorId: a.authorId,
+                title: a.title,
+                description: a.description,
+                urlToImage: a.thumbnailUrl,
+                content: a.content,
+                publishedAt: a.publishedAt?.toIso8601String(),
+              ))
+          .toList();
 
       if (httpResponse.response.statusCode == HttpStatus.ok) {
-        return DataSuccess([...firestoreEntities, ...httpResponse.data]);
+        return Success([...firestoreEntities, ...httpResponse.data]);
       }
 
-      return DataSuccess(firestoreEntities);
-    } on DioException catch (e) {
-      return DataFailed(e);
+      return Success(firestoreEntities);
+    } on Exception catch (e) {
+      return Failure(e);
     }
   }
 
   @override
-  Future<List<ArticleEntity>> getSavedArticles() async {
-    return _appDatabase.articleDAO.getArticles();
+  Future<Result<List<ArticleEntity>>> getSavedArticles() async {
+    try {
+      final articles = await _appDatabase.articleDAO.getArticles();
+      return Success(articles);
+    } on Exception catch (e) {
+      return Failure(e);
+    }
   }
 
   @override
-  Future<void> saveArticle(ArticleEntity article) {
-    return _appDatabase.articleDAO
-        .insertArticle(ArticleModel.fromEntity(article));
+  Future<Result<void>> saveArticle(ArticleEntity article) async {
+    try {
+      await _appDatabase.articleDAO
+          .insertArticle(ArticleModel.fromEntity(article));
+      return const Success(null);
+    } on Exception catch (e) {
+      return Failure(e);
+    }
   }
 
   @override
-  Future<void> removeArticle(ArticleEntity article) {
-    return _appDatabase.articleDAO
-        .deleteArticle(ArticleModel.fromEntity(article));
+  Future<Result<void>> removeArticle(ArticleEntity article) async {
+    try {
+      await _appDatabase.articleDAO
+          .deleteArticle(ArticleModel.fromEntity(article));
+      return const Success(null);
+    } on Exception catch (e) {
+      return Failure(e);
+    }
   }
 }

@@ -32,6 +32,13 @@ class SavedArticles extends HookWidget {
             if (state is LocalArticlesLoading) {
               return const Center(child: CupertinoActivityIndicator());
             }
+            if (state is LocalArticlesError) {
+              return Center(
+                child: Text(state.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.black54)),
+              );
+            }
             if (state is LocalArticlesDone) {
               return _buildList(context, state.articles!);
             }

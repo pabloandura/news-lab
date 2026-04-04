@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/daily_news/domain/usecases/get_saved_article.dart';
 import 'package:news_lab/features/daily_news/domain/usecases/remove_article.dart';
 import 'package:news_lab/features/daily_news/domain/usecases/save_article.dart';
@@ -22,21 +23,44 @@ class LocalArticleBloc extends Bloc<LocalArticlesEvent, LocalArticlesState> {
 
   void onGetSavedArticles(
       GetSavedArticles event, Emitter<LocalArticlesState> emit) async {
-    final articles = await _getSavedArticleUseCase();
-    emit(LocalArticlesDone(articles));
+    emit(const LocalArticlesLoading());
+    switch (await _getSavedArticleUseCase()) {
+      case Success(:final data):
+        emit(LocalArticlesDone(data));
+      case Failure(:final message):
+        emit(LocalArticlesError(message));
+    }
   }
 
   void onSaveArticle(
       SaveArticle event, Emitter<LocalArticlesState> emit) async {
-    await _saveArticleUseCase(params: event.article);
-    final articles = await _getSavedArticleUseCase();
-    emit(LocalArticlesDone(articles));
+    switch (await _saveArticleUseCase(params: event.article)) {
+      case Success():
+        switch (await _getSavedArticleUseCase()) {
+          case Success(:final data):
+            emit(LocalArticlesDone(data));
+          case Failure(:final message):
+            emit(LocalArticlesError(message));
+        }
+      case Failure(:final message):
+        final current = state.articles;
+        emit(LocalArticlesError(message, articles: current));
+    }
   }
 
   void onRemoveArticle(
       RemoveArticle event, Emitter<LocalArticlesState> emit) async {
-    await _removeArticleUseCase(params: event.article);
-    final articles = await _getSavedArticleUseCase();
-    emit(LocalArticlesDone(articles));
+    switch (await _removeArticleUseCase(params: event.article)) {
+      case Success():
+        switch (await _getSavedArticleUseCase()) {
+          case Success(:final data):
+            emit(LocalArticlesDone(data));
+          case Failure(:final message):
+            emit(LocalArticlesError(message));
+        }
+      case Failure(:final message):
+        final current = state.articles;
+        emit(LocalArticlesError(message, articles: current));
+    }
   }
 }
