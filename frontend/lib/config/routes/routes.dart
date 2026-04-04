@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_lab/features/auth/presentation/pages/login_page.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/config/routes/route_args.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/daily_news/presentation/pages/article_detail/article_detail.dart';
 import 'package:news_lab/features/daily_news/presentation/pages/home/daily_news.dart';
 import 'package:news_lab/features/daily_news/presentation/pages/saved_article/saved_article.dart';
@@ -10,25 +10,35 @@ import 'package:news_lab/features/journalist_profile/presentation/bloc/journalis
 import 'package:news_lab/features/journalist_profile/presentation/pages/journalist_profile_page.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
 import 'package:news_lab/features/publish_article/presentation/pages/upload_article_page.dart';
+import 'package:news_lab/features/auth/presentation/pages/login_page.dart';
 import 'package:news_lab/injection_container.dart';
 
 class AppRoutes {
+  AppRoutes._();
+
+  static const home = '/';
+  static const articleDetails = '/ArticleDetails';
+  static const savedArticles = '/SavedArticles';
+  static const login = '/Login';
+  static const uploadArticle = '/UploadArticle';
+  static const journalistProfile = '/JournalistProfile';
+
   static Route onGenerateRoutes(RouteSettings settings) {
     switch (settings.name) {
-      case '/':
+      case home:
         return _materialRoute(const DailyNews());
 
-      case '/ArticleDetails':
+      case articleDetails:
         return _materialRoute(
             ArticleDetailsView(article: settings.arguments as ArticleEntity));
 
-      case '/SavedArticles':
+      case savedArticles:
         return _materialRoute(const SavedArticles());
 
-      case '/Login':
+      case login:
         return _materialRoute(const LoginPage());
 
-      case '/UploadArticle':
+      case uploadArticle:
         return _materialRoute(
           BlocProvider(
             create: (_) => sl<UploadArticleBloc>(),
@@ -36,7 +46,7 @@ class AppRoutes {
           ),
         );
 
-      case '/JournalistProfile':
+      case journalistProfile:
         final args = settings.arguments as JournalistProfileArgs;
         return _materialRoute(
           BlocProvider(
