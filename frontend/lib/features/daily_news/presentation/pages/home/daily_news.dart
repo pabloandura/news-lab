@@ -26,7 +26,7 @@ class DailyNews extends StatelessWidget {
           );
         }
         if (state is RemoteArticlesDone) {
-          return _buildArticlesPage(context, state.articles!);
+          return _buildArticlesPage(context, state.articles ?? []);
         }
         return const SizedBox.shrink();
       },

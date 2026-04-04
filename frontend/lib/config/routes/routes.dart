@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/auth/presentation/pages/login_page.dart';
 import 'package:news_lab/features/daily_news/domain/entities/article.dart';
 import 'package:news_lab/features/daily_news/presentation/pages/article_detail/article_detail.dart';
@@ -24,12 +23,7 @@ class AppRoutes {
         return _materialRoute(const SavedArticles());
 
       case '/Login':
-        return _materialRoute(
-          BlocProvider(
-            create: (_) => sl<AuthBloc>(),
-            child: const LoginPage(),
-          ),
-        );
+        return _materialRoute(const LoginPage());
 
       case '/UploadArticle':
         return _materialRoute(
