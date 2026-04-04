@@ -1,3 +1,4 @@
+import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/publish_article/data/data_sources/article_firestore_data_source.dart';
 import 'package:news_lab/features/publish_article/data/data_sources/article_storage_data_source.dart';
 import 'package:news_lab/features/publish_article/data/models/published_article_model.dart';
@@ -11,7 +12,7 @@ class PublishArticleRepositoryImpl implements PublishArticleRepository {
       this._storageDataSource, this._firestoreDataSource);
 
   @override
-  Future<void> uploadArticle({
+  Future<Result<void>> uploadArticle({
     required String authorId,
     required String author,
     required String title,
@@ -20,19 +21,24 @@ class PublishArticleRepositoryImpl implements PublishArticleRepository {
     required String localImagePath,
     String? category,
   }) async {
-    final thumbnailUrl =
-        await _storageDataSource.uploadThumbnail(localImagePath);
+    try {
+      final thumbnailUrl =
+          await _storageDataSource.uploadThumbnail(localImagePath);
 
-    final article = PublishedArticleModel(
-      author: author,
-      authorId: authorId,
-      title: title,
-      description: description,
-      content: content,
-      thumbnailUrl: thumbnailUrl,
-      category: category,
-    );
+      final article = PublishedArticleModel(
+        author: author,
+        authorId: authorId,
+        title: title,
+        description: description,
+        content: content,
+        thumbnailUrl: thumbnailUrl,
+        category: category,
+      );
 
-    await _firestoreDataSource.saveArticle(article);
+      await _firestoreDataSource.saveArticle(article);
+      return const Success(null);
+    } on Exception catch (e) {
+      return Failure(e);
+    }
   }
 }

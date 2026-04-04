@@ -1,3 +1,4 @@
+import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 
 class UploadArticleParams {
@@ -25,7 +26,7 @@ class UploadArticleUseCase {
 
   UploadArticleUseCase(this._repository);
 
-  Future<void> call(UploadArticleParams params) {
+  Future<Result<void>> call(UploadArticleParams params) {
     return _repository.uploadArticle(
       authorId: params.authorId,
       author: params.author,

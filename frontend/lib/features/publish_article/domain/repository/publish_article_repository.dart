@@ -1,5 +1,7 @@
+import 'package:news_lab/core/resources/result.dart';
+
 abstract class PublishArticleRepository {
-  Future<void> uploadArticle({
+  Future<Result<void>> uploadArticle({
     required String authorId,
     required String author,
     required String title,
