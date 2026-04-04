@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
+import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
+import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_event.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_state.dart';
@@ -53,6 +55,7 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
                 content: Text('Article published successfully!'),
               ),
             );
+            context.read<RemoteArticlesBloc>().add(const GetArticles());
             Navigator.pop(context);
           }
           if (state is UploadArticleError) {
