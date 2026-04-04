@@ -16,7 +16,7 @@ class RemoteArticlesBloc
   void onGetArticles(
       GetArticles event, Emitter<RemoteArticlesState> emit) async {
     emit(const RemoteArticlesLoading());
-    switch (await _getArticleUseCase.callWithCategory(category: event.category)) {
+    switch (await _getArticleUseCase(GetArticlesParams(category: event.category))) {
       case Success(:final data) when data.isNotEmpty:
         emit(RemoteArticlesDone(data));
       case Success():

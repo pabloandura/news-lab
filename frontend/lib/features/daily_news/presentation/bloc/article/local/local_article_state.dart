@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 
 abstract class LocalArticlesState extends Equatable {
   final List<ArticleEntity>? articles;

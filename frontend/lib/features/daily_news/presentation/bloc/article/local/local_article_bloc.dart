@@ -34,7 +34,7 @@ class LocalArticleBloc extends Bloc<LocalArticlesEvent, LocalArticlesState> {
 
   void onSaveArticle(
       SaveArticle event, Emitter<LocalArticlesState> emit) async {
-    switch (await _saveArticleUseCase(params: event.article)) {
+    switch (await _saveArticleUseCase(event.article!)) {
       case Success():
         switch (await _getSavedArticleUseCase()) {
           case Success(:final data):
@@ -50,7 +50,7 @@ class LocalArticleBloc extends Bloc<LocalArticlesEvent, LocalArticlesState> {
 
   void onRemoveArticle(
       RemoveArticle event, Emitter<LocalArticlesState> emit) async {
-    switch (await _removeArticleUseCase(params: event.article)) {
+    switch (await _removeArticleUseCase(event.article!)) {
       case Success():
         switch (await _getSavedArticleUseCase()) {
           case Success(:final data):
