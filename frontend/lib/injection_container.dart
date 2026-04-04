@@ -30,6 +30,13 @@ import 'package:news_lab/features/article_category/data/repository/article_categ
 import 'package:news_lab/features/article_category/domain/repository/article_category_repository.dart';
 import 'package:news_lab/features/article_category/domain/usecases/get_categories_usecase.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
+import 'package:news_lab/features/journalist_profile/data/data_sources/journalist_profile_data_source.dart';
+import 'package:news_lab/features/journalist_profile/data/repository/journalist_profile_repository_impl.dart';
+import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/delete_article_usecase.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/get_journalist_articles_usecase.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/update_article_usecase.dart';
+import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
 
 final sl = GetIt.instance;
@@ -79,6 +86,16 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<GetCurrentUserUseCase>(GetCurrentUserUseCase(sl()));
   sl.registerSingleton<UploadArticleUseCase>(UploadArticleUseCase(sl()));
 
+  // ── journalist_profile ───────────────────────────────────────────────────
+  sl.registerSingleton<JournalistProfileDataSource>(
+      JournalistProfileDataSourceImpl(sl()));
+  sl.registerSingleton<JournalistProfileRepository>(
+      JournalistProfileRepositoryImpl(sl(), sl()));
+  sl.registerSingleton<GetJournalistArticlesUseCase>(
+      GetJournalistArticlesUseCase(sl()));
+  sl.registerSingleton<DeleteArticleUseCase>(DeleteArticleUseCase(sl()));
+  sl.registerSingleton<UpdateArticleUseCase>(UpdateArticleUseCase(sl()));
+
   // ── article_category ──────────────────────────────────────────────────────
   sl.registerSingleton<ArticleCategoryDataSource>(
       ArticleCategoryDataSourceImpl(sl()));
@@ -94,4 +111,6 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<UploadArticleBloc>(() => UploadArticleBloc(sl()));
   sl.registerFactory<ArticleCategoryCubit>(
       () => ArticleCategoryCubit(sl()));
+  sl.registerFactory<JournalistProfileBloc>(
+      () => JournalistProfileBloc(sl(), sl(), sl()));
 }

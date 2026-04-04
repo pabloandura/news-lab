@@ -10,6 +10,7 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/re
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
 import 'package:news_lab/features/daily_news/presentation/widgets/article_tile.dart';
+import 'package:news_lab/features/journalist_profile/presentation/pages/journalist_profile_page.dart';
 
 class DailyNews extends StatelessWidget {
   const DailyNews({super.key});
@@ -20,6 +21,29 @@ class DailyNews extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Daily News', style: TextStyle(color: Colors.black)),
         actions: [
+          GestureDetector(
+            onTap: () {
+              final authState = context.read<AuthBloc>().state;
+              if (authState is AuthAuthenticated) {
+                Navigator.pushNamed(
+                  context,
+                  '/JournalistProfile',
+                  arguments: JournalistProfileArgs(
+                    authorId: authState.user.uid,
+                    displayName: authState.user.displayName ?? authState.user.email,
+                    email: authState.user.email,
+                    isOwner: true,
+                  ),
+                );
+              } else {
+                Navigator.pushNamed(context, '/Login');
+              }
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
+              child: Icon(Icons.person_outline, color: Colors.black),
+            ),
+          ),
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, '/SavedArticles'),
             child: const Padding(

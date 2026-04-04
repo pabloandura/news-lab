@@ -5,6 +5,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:news_lab/features/daily_news/domain/entities/article.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
+import 'package:news_lab/features/journalist_profile/presentation/pages/journalist_profile_page.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ArticleDetailsView extends HookWidget {
@@ -18,7 +19,7 @@ class ArticleDetailsView extends HookWidget {
       create: (_) => sl<LocalArticleBloc>(),
       child: Scaffold(
         appBar: _buildAppBar(context),
-        body: _buildBody(),
+        body: _buildBody(context),
         floatingActionButton: _buildFab(),
       ),
     );
@@ -34,7 +35,7 @@ class ArticleDetailsView extends HookWidget {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,6 +63,41 @@ class ArticleDetailsView extends HookWidget {
                     ),
                   ],
                 ),
+                if (article!.author != null) ...[
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: article!.authorId != null
+                        ? () => Navigator.pushNamed(
+                              context,
+                              '/JournalistProfile',
+                              arguments: JournalistProfileArgs(
+                                authorId: article!.authorId!,
+                                displayName: article!.author!,
+                                isOwner: false,
+                              ),
+                            )
+                        : null,
+                    child: Row(
+                      children: [
+                        const Icon(Ionicons.person_outline,
+                            size: 13, color: Colors.black45),
+                        const SizedBox(width: 4),
+                        Text(
+                          article!.author!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: article!.authorId != null
+                                ? Colors.black87
+                                : Colors.black45,
+                            decoration: article!.authorId != null
+                                ? TextDecoration.underline
+                                : TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
