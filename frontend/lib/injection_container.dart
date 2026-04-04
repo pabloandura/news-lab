@@ -58,7 +58,7 @@ Future<void> initializeDependencies() async {
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
-      ArticleRepositoryImpl(sl(), sl()));
+      ArticleRepositoryImpl(sl(), sl(), sl()));
   sl.registerSingleton<AuthRepository>(
       AuthRepositoryImpl(sl()));
   sl.registerSingleton<PublishArticleRepository>(

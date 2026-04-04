@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/domain/entities/article.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
@@ -61,7 +63,14 @@ class DailyNews extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/UploadArticle'),
+        onPressed: () {
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthAuthenticated) {
+            Navigator.pushNamed(context, '/UploadArticle');
+          } else {
+            Navigator.pushNamed(context, '/Login');
+          }
+        },
         backgroundColor: Colors.black,
         child: const Icon(Icons.add, color: Colors.white),
       ),

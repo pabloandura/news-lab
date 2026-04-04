@@ -4,6 +4,7 @@ import 'package:news_lab/features/publish_article/data/models/published_article_
 
 abstract class ArticleFirestoreDataSource {
   Future<void> saveArticle(PublishedArticleModel article);
+  Future<List<PublishedArticleModel>> getArticles();
 }
 
 class ArticleFirestoreDataSourceImpl implements ArticleFirestoreDataSource {
@@ -16,5 +17,16 @@ class ArticleFirestoreDataSourceImpl implements ArticleFirestoreDataSource {
     await _firestore
         .collection(articlesCollection)
         .add(article.toFirestore());
+  }
+
+  @override
+  Future<List<PublishedArticleModel>> getArticles() async {
+    final snapshot = await _firestore
+        .collection(articlesCollection)
+        .orderBy('publishedAt', descending: true)
+        .get();
+    return snapshot.docs
+        .map((doc) => PublishedArticleModel.fromFirestore(doc))
+        .toList();
   }
 }
