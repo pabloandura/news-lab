@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:news_lab/core/constants/constants.dart';
-import 'package:news_lab/features/publish_article/data/models/published_article_model.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 
 abstract class JournalistProfileDataSource {
-  Future<List<PublishedArticleModel>> getArticlesByAuthor(String authorId);
+  Future<List<ArticleEntity>> getArticlesByAuthor(String authorId);
   Future<void> deleteArticle(String articleId);
   Future<void> updateArticle(
     String articleId, {
@@ -21,16 +21,13 @@ class JournalistProfileDataSourceImpl implements JournalistProfileDataSource {
   JournalistProfileDataSourceImpl(this._firestore);
 
   @override
-  Future<List<PublishedArticleModel>> getArticlesByAuthor(
-      String authorId) async {
+  Future<List<ArticleEntity>> getArticlesByAuthor(String authorId) async {
     final snapshot = await _firestore
         .collection(articlesCollection)
         .where('authorId', isEqualTo: authorId)
         .orderBy('publishedAt', descending: true)
         .get();
-    return snapshot.docs
-        .map((doc) => PublishedArticleModel.fromFirestore(doc))
-        .toList();
+    return snapshot.docs.map(_docToEntity).toList();
   }
 
   @override
@@ -60,5 +57,25 @@ class JournalistProfileDataSourceImpl implements JournalistProfileDataSource {
       'category': category ?? '',
       'thumbnailUrl': thumbnailUrl,
     });
+  }
+
+  static ArticleEntity _docToEntity(
+      QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data();
+    return ArticleEntity(
+      remoteId: doc.id,
+      author: data['author'] as String?,
+      authorId: data['authorId'] as String?,
+      title: data['title'] as String?,
+      description: data['description'] as String?,
+      content: data['content'] as String?,
+      imageUrl: (data['thumbnailUrl'] as String?)?.isNotEmpty == true
+          ? data['thumbnailUrl'] as String
+          : null,
+      category: (data['category'] as String?)?.isNotEmpty == true
+          ? data['category'] as String
+          : null,
+      publishedAt: (data['publishedAt'] as Timestamp?)?.toDate(),
+    );
   }
 }

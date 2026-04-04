@@ -1,19 +1,41 @@
 import 'package:floor/floor.dart';
 import 'package:news_lab/core/constants/constants.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 
 @Entity(tableName: 'article', primaryKeys: ['id'])
-class ArticleModel extends ArticleEntity {
+class ArticleModel {
+  final int? id;
+  final String? author;
+  final String? title;
+  final String? description;
+  final String? url;
+  final String? urlToImage;
+  final String? publishedAt;
+  final String? content;
+
   const ArticleModel({
-    super.id,
-    super.author,
-    super.title,
-    super.description,
-    super.url,
-    super.urlToImage,
-    super.publishedAt,
-    super.content,
+    this.id,
+    this.author,
+    this.title,
+    this.description,
+    this.url,
+    this.urlToImage,
+    this.publishedAt,
+    this.content,
   });
+
+  ArticleEntity toEntity() {
+    return ArticleEntity(
+      id: id,
+      author: author,
+      title: title,
+      description: description,
+      url: url,
+      imageUrl: urlToImage,
+      publishedAt: publishedAt != null ? DateTime.tryParse(publishedAt!) : null,
+      content: content,
+    );
+  }
 
   factory ArticleModel.fromJson(Map<String, dynamic> map) {
     return ArticleModel(
@@ -36,8 +58,8 @@ class ArticleModel extends ArticleEntity {
       title: entity.title,
       description: entity.description,
       url: entity.url,
-      urlToImage: entity.urlToImage,
-      publishedAt: entity.publishedAt,
+      urlToImage: entity.imageUrl,
+      publishedAt: entity.publishedAt?.toIso8601String(),
       content: entity.content,
     );
   }

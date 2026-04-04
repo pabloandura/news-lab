@@ -1,21 +1,21 @@
+import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/journalist_profile/data/data_sources/journalist_profile_data_source.dart';
 import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
-import 'package:news_lab/features/publish_article/data/data_sources/article_storage_data_source.dart';
-import 'package:news_lab/features/publish_article/domain/entities/published_article_entity.dart';
 
 class JournalistProfileRepositoryImpl implements JournalistProfileRepository {
   final JournalistProfileDataSource _dataSource;
-  final ArticleStorageDataSource _storageDataSource;
+  final ArticlesStorageDataSource _storageDataSource;
 
   JournalistProfileRepositoryImpl(this._dataSource, this._storageDataSource);
 
   @override
-  Future<Result<List<PublishedArticleEntity>>> getArticlesByAuthor(
+  Future<Result<List<ArticleEntity>>> getArticlesByAuthor(
       String authorId) async {
     try {
-      final models = await _dataSource.getArticlesByAuthor(authorId);
-      return Success(models);
+      final entities = await _dataSource.getArticlesByAuthor(authorId);
+      return Success(entities);
     } on Exception catch (e) {
       return Failure(e);
     }

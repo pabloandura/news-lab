@@ -1,15 +1,15 @@
+import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
+import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
-import 'package:news_lab/features/publish_article/data/data_sources/article_firestore_data_source.dart';
-import 'package:news_lab/features/publish_article/data/data_sources/article_storage_data_source.dart';
-import 'package:news_lab/features/publish_article/data/models/published_article_model.dart';
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 
 class PublishArticleRepositoryImpl implements PublishArticleRepository {
-  final ArticleStorageDataSource _storageDataSource;
-  final ArticleFirestoreDataSource _firestoreDataSource;
+  final ArticlesStorageDataSource _storageDataSource;
+  final ArticlesRemoteDataSource _remoteDataSource;
 
   PublishArticleRepositoryImpl(
-      this._storageDataSource, this._firestoreDataSource);
+      this._storageDataSource, this._remoteDataSource);
 
   @override
   Future<Result<void>> uploadArticle({
@@ -25,17 +25,16 @@ class PublishArticleRepositoryImpl implements PublishArticleRepository {
       final thumbnailUrl =
           await _storageDataSource.uploadThumbnail(localImagePath);
 
-      final article = PublishedArticleModel(
-        author: author,
+      await _remoteDataSource.saveArticle(ArticleEntity(
         authorId: authorId,
+        author: author,
         title: title,
         description: description,
         content: content,
-        thumbnailUrl: thumbnailUrl,
+        imageUrl: thumbnailUrl,
         category: category,
-      );
+      ));
 
-      await _firestoreDataSource.saveArticle(article);
       return const Success(null);
     } on Exception catch (e) {
       return Failure(e);

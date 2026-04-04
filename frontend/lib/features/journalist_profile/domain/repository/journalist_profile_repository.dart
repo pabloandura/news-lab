@@ -1,8 +1,8 @@
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
-import 'package:news_lab/features/publish_article/domain/entities/published_article_entity.dart';
 
 abstract class JournalistProfileRepository {
-  Future<Result<List<PublishedArticleEntity>>> getArticlesByAuthor(String authorId);
+  Future<Result<List<ArticleEntity>>> getArticlesByAuthor(String authorId);
   Future<Result<void>> deleteArticle(String articleId);
   Future<Result<void>> updateArticle(UpdateArticleParams params);
 }

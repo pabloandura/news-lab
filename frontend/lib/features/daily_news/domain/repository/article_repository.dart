@@ -1,5 +1,5 @@
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
 
 abstract class ArticleRepository {
   Future<Result<List<ArticleEntity>>> getNewsArticles({String? category});
