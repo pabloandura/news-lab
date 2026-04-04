@@ -1,5 +1,5 @@
 const String newsAPIBaseURL = 'https://newsapi.org/v2';
-const String newsAPIKey = 'REDACTED_API_KEY';
+const String newsAPIKey = String.fromEnvironment('NEWS_API_KEY');
 const String countryQuery = 'us';
 const String categoryQuery = 'general';
 const String kDefaultImage =
