@@ -6,6 +6,7 @@ import 'package:news_lab/features/article_category/presentation/cubit/article_ca
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/pages/home/daily_news.dart';
+import 'package:news_lab/injection_container.dart';
 
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
@@ -87,11 +88,9 @@ class _CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => MultiBlocProvider(
-            providers: [
-              BlocProvider.value(value: context.read<RemoteArticlesBloc>()),
-              BlocProvider.value(value: context.read<ArticleCategoryCubit>()),
-            ],
+          builder: (_) => BlocProvider(
+            create: (_) => sl<RemoteArticlesBloc>()
+              ..add(GetArticles(category: category.slug)),
             child: _CategoryFeedPage(category: category),
           ),
         ));
@@ -129,19 +128,12 @@ class _CategoryFeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Trigger fetch for this category
-    context.read<RemoteArticlesBloc>().add(GetArticles(category: category.slug));
-
     return Scaffold(
       appBar: AppBar(
         title: Text(category.name, style: const TextStyle(color: Colors.black)),
         leading: BackButton(
           color: Colors.black,
-          onPressed: () {
-            // Restore full feed when going back
-            context.read<RemoteArticlesBloc>().add(const GetArticles());
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: const ArticleListBody(),
