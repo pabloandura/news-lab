@@ -18,15 +18,15 @@ class ArticleRepositoryImpl implements ArticleRepository {
   ArticleRepositoryImpl(this._newsApiService, this._appDatabase, this._firestoreDataSource);
 
   @override
-  Future<DataState<List<ArticleEntity>>> getNewsArticles() async {
+  Future<DataState<List<ArticleEntity>>> getNewsArticles({String? category}) async {
     try {
       final results = await Future.wait([
         _newsApiService.getNewsArticles(
           apiKey: newsAPIKey,
           country: countryQuery,
-          category: categoryQuery,
+          category: category ?? categoryQuery,
         ),
-        _firestoreDataSource.getArticles(),
+        _firestoreDataSource.getArticles(category: category),
       ]);
 
       final httpResponse = results[0] as dynamic;

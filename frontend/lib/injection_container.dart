@@ -25,6 +25,11 @@ import 'package:news_lab/features/publish_article/data/data_sources/article_stor
 import 'package:news_lab/features/publish_article/data/repository/publish_article_repository_impl.dart';
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 import 'package:news_lab/features/publish_article/domain/usecases/upload_article.dart';
+import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
+import 'package:news_lab/features/article_category/data/repository/article_category_repository_impl.dart';
+import 'package:news_lab/features/article_category/domain/repository/article_category_repository.dart';
+import 'package:news_lab/features/article_category/domain/usecases/get_categories_usecase.dart';
+import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
 
 final sl = GetIt.instance;
@@ -74,10 +79,19 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<GetCurrentUserUseCase>(GetCurrentUserUseCase(sl()));
   sl.registerSingleton<UploadArticleUseCase>(UploadArticleUseCase(sl()));
 
+  // ── article_category ──────────────────────────────────────────────────────
+  sl.registerSingleton<ArticleCategoryDataSource>(
+      ArticleCategoryDataSourceImpl(sl()));
+  sl.registerSingleton<ArticleCategoryRepository>(
+      ArticleCategoryRepositoryImpl(sl()));
+  sl.registerSingleton<GetCategoriesUseCase>(GetCategoriesUseCase(sl()));
+
   // ── BLoCs (factories — new instance per route) ────────────────────────────
   sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl()));
   sl.registerFactory<LocalArticleBloc>(
       () => LocalArticleBloc(sl(), sl(), sl()));
   sl.registerFactory<AuthBloc>(() => AuthBloc(sl(), sl(), sl()));
   sl.registerFactory<UploadArticleBloc>(() => UploadArticleBloc(sl()));
+  sl.registerFactory<ArticleCategoryCubit>(
+      () => ArticleCategoryCubit(sl()));
 }

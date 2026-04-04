@@ -12,4 +12,8 @@ class GetArticleUseCase implements UseCase<DataState<List<ArticleEntity>>, void>
   Future<DataState<List<ArticleEntity>>> call({void params}) {
     return _articleRepository.getNewsArticles();
   }
+
+  Future<DataState<List<ArticleEntity>>> callWithCategory({String? category}) {
+    return _articleRepository.getNewsArticles(category: category);
+  }
 }

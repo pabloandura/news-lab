@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:news_lab/features/article_category/domain/entities/article_category_entity.dart';
+import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
+import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
@@ -23,15 +26,14 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _contentController = TextEditingController();
-  final _categoryController = TextEditingController();
   File? _thumbnailFile;
+  ArticleCategoryEntity? _selectedCategory;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     _contentController.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
@@ -108,12 +110,7 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
                         (v == null || v.trim().isEmpty) ? 'Content is required' : null,
                   ),
                   const SizedBox(height: 16),
-                  _buildField(
-                    controller: _categoryController,
-                    label: 'Category (optional)',
-                    hint: 'e.g. technology, politics, sports',
-                    enabled: !isLoading,
-                  ),
+                  _buildCategorySelector(isLoading),
                   const SizedBox(height: 32),
                   SizedBox(
                     height: 50,
@@ -142,6 +139,43 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildCategorySelector(bool disabled) {
+    return BlocBuilder<ArticleCategoryCubit, ArticleCategoryState>(
+      builder: (context, state) {
+        final categories = state is ArticleCategoryLoaded ? state.categories : <ArticleCategoryEntity>[];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Category (optional)',
+                style: TextStyle(fontSize: 13, color: Colors.black54)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: categories.map((cat) {
+                final isSelected = _selectedCategory?.slug == cat.slug;
+                return FilterChip(
+                  label: Text(cat.name),
+                  selected: isSelected,
+                  onSelected: disabled
+                      ? null
+                      : (_) => setState(() {
+                            _selectedCategory = isSelected ? null : cat;
+                          }),
+                  selectedColor: Colors.black,
+                  checkmarkColor: Colors.white,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black87,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -230,9 +264,7 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
           description: _descriptionController.text.trim(),
           content: _contentController.text.trim(),
           localImagePath: _thumbnailFile!.path,
-          category: _categoryController.text.trim().isEmpty
-              ? null
-              : _categoryController.text.trim(),
+          category: _selectedCategory?.slug,
         ));
   }
 }
