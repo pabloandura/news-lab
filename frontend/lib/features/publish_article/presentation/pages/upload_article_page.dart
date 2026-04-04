@@ -71,7 +71,8 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
         },
         builder: (context, state) {
           final isLoading = state is UploadArticleLoading;
-          return SingleChildScrollView(
+          return SafeArea(
+            child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Form(
               key: _formKey,
@@ -136,7 +137,7 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
                 ],
               ),
             ),
-          );
+          ));
         },
       ),
     );

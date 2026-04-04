@@ -58,24 +58,28 @@ class _CategoryFilterBar extends StatelessWidget {
         if (state is! ArticleCategoryLoaded) return const SizedBox.shrink();
         final categories = state.categories;
         final selected = state.selected;
+        final allCategories = [null, ...categories];
         return SizedBox(
           height: 48,
-          child: ListView.separated(
+          child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            itemCount: categories.length + 1, // +1 for "All"
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, index) {
-              final isAll = index == 0;
-              final category = isAll ? null : categories[index - 1];
-              final isSelected =
-                  isAll ? selected == null : selected?.slug == category?.slug;
-              return _FilterChip(
-                label: isAll ? 'All' : category!.name,
-                selected: isSelected,
-                onTap: () => _onChipTap(context, category),
-              );
-            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: allCategories.map((category) {
+                final isSelected = category == null
+                    ? selected == null
+                    : selected?.slug == category.slug;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _FilterChip(
+                    label: category == null ? 'All' : category.name,
+                    selected: isSelected,
+                    onTap: () => _onChipTap(context, category),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         );
       },
