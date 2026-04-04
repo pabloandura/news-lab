@@ -1,13 +1,16 @@
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
+import 'package:news_lab/core/usecase/usecase.dart';
 import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
-import 'package:news_lab/features/publish_article/domain/entities/published_article_entity.dart';
 
-class GetJournalistArticlesUseCase {
+class GetJournalistArticlesUseCase
+    implements UseCase<Result<List<ArticleEntity>>, String> {
   final JournalistProfileRepository _repository;
 
   GetJournalistArticlesUseCase(this._repository);
 
-  Future<Result<List<PublishedArticleEntity>>> call(String authorId) {
-    return _repository.getArticlesByAuthor(authorId);
+  @override
+  Future<Result<List<ArticleEntity>>> call(String params) {
+    return _repository.getArticlesByAuthor(params);
   }
 }
