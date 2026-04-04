@@ -32,3 +32,23 @@ Thumbnail images live at:
 ```
 media/articles/<uuid>
 ```
+
+---
+
+## Collection: `articleCategories`
+
+Each document represents a category that articles can be tagged with.
+The document ID is the category slug (e.g. `technology`, `business`).
+
+```
+ArticleCategorySchema = {
+  name:  string,   // display name shown in the UI (e.g. "Technology")
+  slug:  string,   // machine-readable identifier, matches the document ID
+  order: number,   // integer used to sort categories deterministically in the filter bar
+}
+```
+
+### Design Notes
+- Using the slug as the document ID makes lookups by slug O(1) without a query.
+- `order` keeps the category chips and explore grid stable across fetches regardless of insertion order.
+- The `category` field on `articles` documents stores the slug so it can be compared directly against a category document ID.
