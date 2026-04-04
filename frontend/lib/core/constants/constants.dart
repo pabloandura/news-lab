@@ -1,0 +1,8 @@
+const String newsAPIBaseURL = 'https://newsapi.org/v2';
+const String newsAPIKey = 'REDACTED_API_KEY';
+const String countryQuery = 'us';
+const String categoryQuery = 'general';
+const String kDefaultImage =
+    'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';
+const String articlesCollection = 'articles';
+const String articlesThumbnailStoragePath = 'media/articles';
