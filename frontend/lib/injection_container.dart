@@ -3,6 +3,13 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
+import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
+import 'package:news_lab/features/article_category/data/repository/article_category_repository_impl.dart';
+import 'package:news_lab/features/article_category/domain/repository/article_category_repository.dart';
+import 'package:news_lab/features/article_category/domain/usecases/get_categories_usecase.dart';
+import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:news_lab/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:news_lab/features/auth/domain/repository/auth_repository.dart';
@@ -20,16 +27,6 @@ import 'package:news_lab/features/daily_news/domain/usecases/remove_article.dart
 import 'package:news_lab/features/daily_news/domain/usecases/save_article.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
-import 'package:news_lab/features/publish_article/data/data_sources/article_firestore_data_source.dart';
-import 'package:news_lab/features/publish_article/data/data_sources/article_storage_data_source.dart';
-import 'package:news_lab/features/publish_article/data/repository/publish_article_repository_impl.dart';
-import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
-import 'package:news_lab/features/publish_article/domain/usecases/upload_article.dart';
-import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
-import 'package:news_lab/features/article_category/data/repository/article_category_repository_impl.dart';
-import 'package:news_lab/features/article_category/domain/repository/article_category_repository.dart';
-import 'package:news_lab/features/article_category/domain/usecases/get_categories_usecase.dart';
-import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/journalist_profile/data/data_sources/journalist_profile_data_source.dart';
 import 'package:news_lab/features/journalist_profile/data/repository/journalist_profile_repository_impl.dart';
 import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
@@ -37,6 +34,9 @@ import 'package:news_lab/features/journalist_profile/domain/usecases/delete_arti
 import 'package:news_lab/features/journalist_profile/domain/usecases/get_journalist_articles_usecase.dart';
 import 'package:news_lab/features/journalist_profile/domain/usecases/update_article_usecase.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
+import 'package:news_lab/features/publish_article/data/repository/publish_article_repository_impl.dart';
+import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
+import 'package:news_lab/features/publish_article/domain/usecases/upload_article.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
 
 final sl = GetIt.instance;
@@ -55,26 +55,36 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<FirebaseFirestore>(FirebaseFirestore.instance);
   sl.registerSingleton<FirebaseStorage>(FirebaseStorage.instance);
 
+  // ── Core data sources ─────────────────────────────────────────────────────
+  sl.registerSingleton<ArticlesRemoteDataSource>(
+      ArticlesRemoteDataSourceImpl(sl()));
+  sl.registerSingleton<ArticlesStorageDataSource>(
+      ArticlesStorageDataSourceImpl(sl()));
+
   // ── daily_news data sources ───────────────────────────────────────────────
   sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
 
   // ── auth data sources ─────────────────────────────────────────────────────
-  sl.registerSingleton<AuthRemoteDataSource>(
-      AuthRemoteDataSourceImpl(sl()));
+  sl.registerSingleton<AuthRemoteDataSource>(AuthRemoteDataSourceImpl(sl()));
 
-  // ── publish_article data sources ──────────────────────────────────────────
-  sl.registerSingleton<ArticleStorageDataSource>(
-      ArticleStorageDataSourceImpl(sl()));
-  sl.registerSingleton<ArticleFirestoreDataSource>(
-      ArticleFirestoreDataSourceImpl(sl()));
+  // ── journalist_profile data sources ───────────────────────────────────────
+  sl.registerSingleton<JournalistProfileDataSource>(
+      JournalistProfileDataSourceImpl(sl()));
+
+  // ── article_category data sources ─────────────────────────────────────────
+  sl.registerSingleton<ArticleCategoryDataSource>(
+      ArticleCategoryDataSourceImpl(sl()));
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
       ArticleRepositoryImpl(sl(), sl(), sl()));
-  sl.registerSingleton<AuthRepository>(
-      AuthRepositoryImpl(sl()));
+  sl.registerSingleton<AuthRepository>(AuthRepositoryImpl(sl()));
   sl.registerSingleton<PublishArticleRepository>(
       PublishArticleRepositoryImpl(sl(), sl()));
+  sl.registerSingleton<JournalistProfileRepository>(
+      JournalistProfileRepositoryImpl(sl(), sl()));
+  sl.registerSingleton<ArticleCategoryRepository>(
+      ArticleCategoryRepositoryImpl(sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -85,22 +95,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<SignOutUseCase>(SignOutUseCase(sl()));
   sl.registerSingleton<GetCurrentUserUseCase>(GetCurrentUserUseCase(sl()));
   sl.registerSingleton<UploadArticleUseCase>(UploadArticleUseCase(sl()));
-
-  // ── journalist_profile ───────────────────────────────────────────────────
-  sl.registerSingleton<JournalistProfileDataSource>(
-      JournalistProfileDataSourceImpl(sl()));
-  sl.registerSingleton<JournalistProfileRepository>(
-      JournalistProfileRepositoryImpl(sl(), sl()));
   sl.registerSingleton<GetJournalistArticlesUseCase>(
       GetJournalistArticlesUseCase(sl()));
   sl.registerSingleton<DeleteArticleUseCase>(DeleteArticleUseCase(sl()));
   sl.registerSingleton<UpdateArticleUseCase>(UpdateArticleUseCase(sl()));
-
-  // ── article_category ──────────────────────────────────────────────────────
-  sl.registerSingleton<ArticleCategoryDataSource>(
-      ArticleCategoryDataSourceImpl(sl()));
-  sl.registerSingleton<ArticleCategoryRepository>(
-      ArticleCategoryRepositoryImpl(sl()));
   sl.registerSingleton<GetCategoriesUseCase>(GetCategoriesUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
