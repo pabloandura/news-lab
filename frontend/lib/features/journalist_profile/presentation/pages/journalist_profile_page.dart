@@ -2,26 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/config/routes/route_args.dart';
+import 'package:news_lab/config/routes/routes.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
 import 'package:news_lab/features/journalist_profile/presentation/pages/edit_article_page.dart';
-import 'package:news_lab/features/publish_article/domain/entities/published_article_entity.dart';
-
-class JournalistProfileArgs {
-  final String authorId;
-  final String displayName;
-  final String? email;
-  final bool isOwner;
-
-  const JournalistProfileArgs({
-    required this.authorId,
-    required this.displayName,
-    this.email,
-    required this.isOwner,
-  });
-}
 
 class JournalistProfilePage extends StatelessWidget {
   final JournalistProfileArgs args;
@@ -92,11 +79,11 @@ class JournalistProfilePage extends StatelessWidget {
                       return _ArticleRow(
                         article: article,
                         isOwner: args.isOwner,
-                        isPendingDelete: pendingDeleteId == article.id,
-                        isPendingUpdate: pendingUpdateId == article.id,
+                        isPendingDelete: pendingDeleteId == article.remoteId,
+                        isPendingUpdate: pendingUpdateId == article.remoteId,
                         onDelete: () => context
                             .read<JournalistProfileBloc>()
-                            .add(DeleteArticleRequested(article.id!)),
+                            .add(DeleteArticleRequested(article.remoteId!)),
                         onEdit: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -108,17 +95,8 @@ class JournalistProfilePage extends StatelessWidget {
                         ),
                         onTap: () => Navigator.pushNamed(
                           context,
-                          '/ArticleDetails',
-                          arguments: ArticleEntity(
-                            author: article.author,
-                            authorId: article.authorId,
-                            title: article.title,
-                            description: article.description,
-                            urlToImage: article.thumbnailUrl,
-                            publishedAt:
-                                article.publishedAt?.toIso8601String(),
-                            content: article.content,
-                          ),
+                          AppRoutes.articleDetails,
+                          arguments: article,
                         ),
                       );
                     },
@@ -132,7 +110,7 @@ class JournalistProfilePage extends StatelessWidget {
     );
   }
 
-  List<PublishedArticleEntity>? _articlesFrom(JournalistProfileState state) {
+  List<ArticleEntity>? _articlesFrom(JournalistProfileState state) {
     if (state is JournalistProfileLoaded) return state.articles;
     if (state is ArticleActionError) return state.articles;
     if (state is ArticleUpdateSuccess) return state.articles;
@@ -194,7 +172,7 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _ArticleRow extends StatelessWidget {
-  final PublishedArticleEntity article;
+  final ArticleEntity article;
   final bool isOwner;
   final bool isPendingDelete;
   final bool isPendingUpdate;
@@ -225,7 +203,7 @@ class _ArticleRow extends StatelessWidget {
           height: MediaQuery.of(context).size.width / 2.4,
           child: Row(
             children: [
-              _Thumbnail(url: article.thumbnailUrl),
+              _Thumbnail(url: article.imageUrl),
               const SizedBox(width: 12),
               Expanded(child: _ArticleInfo(article: article)),
               if (isOwner)
@@ -243,7 +221,7 @@ class _ArticleRow extends StatelessWidget {
 }
 
 class _Thumbnail extends StatelessWidget {
-  final String url;
+  final String? url;
   const _Thumbnail({required this.url});
 
   @override
@@ -251,7 +229,7 @@ class _Thumbnail extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: CachedNetworkImage(
-        imageUrl: url,
+        imageUrl: url ?? '',
         width: MediaQuery.of(context).size.width / 3.2,
         height: double.maxFinite,
         fit: BoxFit.cover,
@@ -269,7 +247,7 @@ class _Thumbnail extends StatelessWidget {
 }
 
 class _ArticleInfo extends StatelessWidget {
-  final PublishedArticleEntity article;
+  final ArticleEntity article;
   const _ArticleInfo({required this.article});
 
   @override
@@ -281,7 +259,7 @@ class _ArticleInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            article.title,
+            article.title ?? '',
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -292,7 +270,7 @@ class _ArticleInfo extends StatelessWidget {
           const SizedBox(height: 4),
           Expanded(
             child: Text(
-              article.description,
+              article.description ?? '',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 12, color: Colors.black54),

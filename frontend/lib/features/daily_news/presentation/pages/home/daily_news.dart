@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_lab/config/routes/route_args.dart';
+import 'package:news_lab/config/routes/routes.dart';
 import 'package:news_lab/features/article_category/domain/entities/article_category_entity.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
@@ -10,7 +12,6 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/re
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
 import 'package:news_lab/features/daily_news/presentation/widgets/article_tile.dart';
-import 'package:news_lab/features/journalist_profile/presentation/pages/journalist_profile_page.dart';
 
 class DailyNews extends StatelessWidget {
   const DailyNews({super.key});
@@ -27,16 +28,17 @@ class DailyNews extends StatelessWidget {
               if (authState is AuthAuthenticated) {
                 Navigator.pushNamed(
                   context,
-                  '/JournalistProfile',
+                  AppRoutes.journalistProfile,
                   arguments: JournalistProfileArgs(
                     authorId: authState.user.uid,
-                    displayName: authState.user.displayName ?? authState.user.email,
+                    displayName:
+                        authState.user.displayName ?? authState.user.email,
                     email: authState.user.email,
                     isOwner: true,
                   ),
                 );
               } else {
-                Navigator.pushNamed(context, '/Login');
+                Navigator.pushNamed(context, AppRoutes.login);
               }
             },
             child: const Padding(
@@ -45,7 +47,7 @@ class DailyNews extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/SavedArticles'),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.savedArticles),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 14),
               child: Icon(Icons.bookmark, color: Colors.black),
@@ -62,9 +64,9 @@ class DailyNews extends StatelessWidget {
         onPressed: () {
           final authState = context.read<AuthBloc>().state;
           if (authState is AuthAuthenticated) {
-            Navigator.pushNamed(context, '/UploadArticle');
+            Navigator.pushNamed(context, AppRoutes.uploadArticle);
           } else {
-            Navigator.pushNamed(context, '/Login');
+            Navigator.pushNamed(context, AppRoutes.login);
           }
         },
         backgroundColor: Colors.black,
@@ -178,7 +180,7 @@ class ArticleListBody extends StatelessWidget {
             itemBuilder: (context, index) => ArticleWidget(
               article: articles[index],
               onArticlePressed: (article) => Navigator.pushNamed(
-                  context, '/ArticleDetails',
+                  context, AppRoutes.articleDetails,
                   arguments: article),
             ),
           );

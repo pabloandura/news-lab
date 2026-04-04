@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/article_category/domain/entities/article_category_entity.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
@@ -11,10 +12,9 @@ import 'package:news_lab/features/journalist_profile/domain/repository/journalis
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
-import 'package:news_lab/features/publish_article/domain/entities/published_article_entity.dart';
 
 class EditArticlePage extends StatefulWidget {
-  final PublishedArticleEntity article;
+  final ArticleEntity article;
 
   const EditArticlePage({super.key, required this.article});
 
@@ -74,7 +74,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
         },
         builder: (context, state) {
           final isLoading = state is JournalistProfileLoaded &&
-              state.pendingUpdateId == widget.article.id;
+              state.pendingUpdateId == widget.article.remoteId;
 
           return SafeArea(
             child: SingleChildScrollView(
@@ -172,7 +172,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                   fit: StackFit.expand,
                   children: [
                     CachedNetworkImage(
-                      imageUrl: widget.article.thumbnailUrl,
+                      imageUrl: widget.article.imageUrl ?? '',
                       fit: BoxFit.cover,
                       errorWidget: (_, __, ___) =>
                           Container(color: Colors.black12),
@@ -204,7 +204,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
         final categories =
             state is ArticleCategoryLoaded ? state.categories : <ArticleCategoryEntity>[];
 
-        // Initialise selection from article on first build.
         if (_selectedCategory == null && currentSlug != null) {
           try {
             _selectedCategory =
@@ -281,13 +280,13 @@ class _EditArticlePageState extends State<EditArticlePage> {
     context.read<JournalistProfileBloc>().add(
           UpdateArticleRequested(
             UpdateArticleParams(
-              articleId: widget.article.id!,
+              articleId: widget.article.remoteId!,
               title: _titleController.text.trim(),
               description: _descriptionController.text.trim(),
               content: _contentController.text.trim(),
               category: _selectedCategory?.slug,
               localImagePath: _newThumbnailFile?.path,
-              existingThumbnailUrl: widget.article.thumbnailUrl,
+              existingThumbnailUrl: widget.article.imageUrl ?? '',
             ),
           ),
         );

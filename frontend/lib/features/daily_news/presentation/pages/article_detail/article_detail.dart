@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/config/routes/route_args.dart';
+import 'package:news_lab/config/routes/routes.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
-import 'package:news_lab/features/journalist_profile/presentation/pages/journalist_profile_page.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ArticleDetailsView extends HookWidget {
@@ -57,7 +58,7 @@ class ArticleDetailsView extends HookWidget {
                         size: 14, color: Colors.black45),
                     const SizedBox(width: 4),
                     Text(
-                      article!.publishedAt ?? '',
+                      _formatDate(article!.publishedAt),
                       style: const TextStyle(
                           fontSize: 11, color: Colors.black45),
                     ),
@@ -69,7 +70,7 @@ class ArticleDetailsView extends HookWidget {
                     onTap: article!.authorId != null
                         ? () => Navigator.pushNamed(
                               context,
-                              '/JournalistProfile',
+                              AppRoutes.journalistProfile,
                               arguments: JournalistProfileArgs(
                                 authorId: article!.authorId!,
                                 displayName: article!.author!,
@@ -101,11 +102,11 @@ class ArticleDetailsView extends HookWidget {
               ],
             ),
           ),
-          if (article!.urlToImage != null)
+          if (article!.imageUrl != null)
             SizedBox(
               width: double.maxFinite,
               height: 250,
-              child: Image.network(article!.urlToImage!, fit: BoxFit.cover),
+              child: Image.network(article!.imageUrl!, fit: BoxFit.cover),
             ),
           Padding(
             padding:
@@ -136,5 +137,14 @@ class ArticleDetailsView extends HookWidget {
         child: const Icon(Ionicons.bookmark, color: Colors.white),
       ),
     );
+  }
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 }

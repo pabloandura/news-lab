@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/config/routes/routes.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_state.dart';
@@ -63,8 +64,9 @@ class SavedArticles extends HookWidget {
         isRemovable: true,
         onRemove: (article) => BlocProvider.of<LocalArticleBloc>(context)
             .add(RemoveArticle(article)),
-        onArticlePressed: (article) =>
-            Navigator.pushNamed(context, '/ArticleDetails', arguments: article),
+        onArticlePressed: (article) => Navigator.pushNamed(
+            context, AppRoutes.articleDetails,
+            arguments: article),
       ),
     );
   }

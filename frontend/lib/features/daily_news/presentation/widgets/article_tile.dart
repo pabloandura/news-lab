@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:news_lab/features/daily_news/domain/entities/article.dart';
+import 'package:news_lab/core/constants/constants.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 
 class ArticleWidget extends StatelessWidget {
   final ArticleEntity? article;
@@ -39,7 +40,7 @@ class ArticleWidget extends StatelessWidget {
 
   Widget _buildImage(BuildContext context) {
     return CachedNetworkImage(
-      imageUrl: article!.urlToImage!,
+      imageUrl: article!.imageUrl ?? kDefaultImage,
       imageBuilder: (context, imageProvider) => Padding(
         padding: const EdgeInsetsDirectional.only(end: 14),
         child: ClipRRect(
@@ -119,7 +120,7 @@ class ArticleWidget extends StatelessWidget {
                 const Icon(Icons.access_time, size: 14, color: Colors.black45),
                 const SizedBox(width: 4),
                 Text(
-                  article!.publishedAt ?? '',
+                  _formatDate(article!.publishedAt),
                   style:
                       const TextStyle(fontSize: 11, color: Colors.black45),
                 ),
@@ -142,6 +143,15 @@ class ArticleWidget extends StatelessWidget {
       );
     }
     return const SizedBox.shrink();
+  }
+
+  String _formatDate(DateTime? dt) {
+    if (dt == null) return '';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
   void _onTap() => onArticlePressed?.call(article!);
