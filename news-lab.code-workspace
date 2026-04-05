@@ -1,0 +1,33 @@
+{
+  "folders": [
+    { "name": "app (Flutter)", "path": "./frontend" },
+    { "name": "fact-checker", "path": "./services/fact-checker" },
+    { "name": "polarizer", "path": "./services/polarizer" },
+    { "name": "sensemaker", "path": "./services/sensemaker" },
+    { "name": "types", "path": "./types" },
+    { "name": "infra", "path": "./infra" }
+  ],
+  "settings": {
+    "typescript.tsdk": "types/node_modules/typescript/lib",
+    "editor.formatOnSave": true,
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[dart]": {
+      "editor.defaultFormatter": "Dart-Code.dart-code"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "Dart-Code.flutter",
+      "Dart-Code.dart-code",
+      "ms-python.python",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-azuretools.vscode-docker",
+      "GoogleCloudTools.cloudcode",
+      "eamodio.gitlens",
+      "humao.rest-client"
+    ]
+  }
+}
