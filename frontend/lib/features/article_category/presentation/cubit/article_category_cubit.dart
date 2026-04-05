@@ -22,7 +22,10 @@ class ArticleCategoryCubit extends Cubit<ArticleCategoryState> {
   void select(ArticleCategoryEntity? category) {
     final current = state;
     if (current is ArticleCategoryLoaded) {
-      emit(current.copyWith(selected: category));
+      emit(current.copyWith(
+        selected: category,
+        clearSelected: category == null,
+      ));
     }
   }
 }
