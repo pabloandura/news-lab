@@ -10,7 +10,7 @@ A running log of checkpoints as the project progresses. Each checkpoint captures
 
 **What was built:**
 - Firebase project configured (Firestore, Storage, Auth — email/password)
-- Firestore schema designed and documented (`backend/docs/DB_SCHEMA.md`)
+- Firestore schema designed and documented (`backend/docs/DB_SCHEMA.md`) — intentionally kept at this path to match the assignment spec
 - Firestore and Storage security rules written and deployed
 - Flutter connected to Firebase via FlutterFire CLI
 - `auth` feature: sign in, sign out, `AuthBloc`, navigation guards
