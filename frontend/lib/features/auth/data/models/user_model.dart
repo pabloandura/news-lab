@@ -15,4 +15,10 @@ class UserModel extends UserEntity {
       displayName: user.displayName,
     );
   }
+
+  UserEntity toEntity() => UserEntity(
+        uid: uid,
+        email: email,
+        displayName: displayName,
+      );
 }

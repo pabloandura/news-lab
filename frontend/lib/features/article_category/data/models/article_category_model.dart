@@ -12,4 +12,7 @@ class ArticleCategoryModel extends ArticleCategoryEntity {
       name: data['name'] ?? doc.id,
     );
   }
+
+  ArticleCategoryEntity toEntity() =>
+      ArticleCategoryEntity(slug: slug, name: name);
 }
