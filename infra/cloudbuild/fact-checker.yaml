@@ -1,0 +1,60 @@
+steps:
+  # Install shared types
+  - name: node:20
+    id: install-types
+    dir: types
+    args: ['npm', 'ci']
+
+  # Install service dependencies
+  - name: node:20
+    id: install
+    dir: services/fact-checker
+    args: ['npm', 'ci']
+
+  # Validate shared contract
+  - name: node:20
+    id: typecheck
+    dir: services/fact-checker
+    args: ['npx', 'tsc', '--noEmit']
+    waitFor: ['install-types', 'install']
+
+  # Run tests
+  - name: node:20
+    id: test
+    dir: services/fact-checker
+    args: ['npm', 'test']
+    waitFor: ['typecheck']
+
+  # Build Docker image
+  - name: gcr.io/cloud-builders/docker
+    id: build
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/fact-checker:$COMMIT_SHA
+      - services/fact-checker
+    waitFor: ['test']
+
+  # Push to Artifact Registry
+  - name: gcr.io/cloud-builders/docker
+    id: push
+    args: ['push', 'gcr.io/$PROJECT_ID/fact-checker:$COMMIT_SHA']
+    waitFor: ['build']
+
+  # Deploy to Cloud Run
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: deploy
+    args:
+      - gcloud
+      - run
+      - deploy
+      - fact-checker
+      - --image=gcr.io/$PROJECT_ID/fact-checker:$COMMIT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --no-allow-unauthenticated
+    waitFor: ['push']
+
+# Trigger config (set in GCP Console or via gcloud):
+#   includedFiles: ['services/fact-checker/**', 'types/**']
+#   branch: ^main$
