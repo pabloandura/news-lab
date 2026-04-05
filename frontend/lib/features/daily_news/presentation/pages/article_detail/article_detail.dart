@@ -5,8 +5,14 @@ import 'package:ionicons/ionicons.dart';
 import 'package:news_lab/config/routes/route_args.dart';
 import 'package:news_lab/config/routes/routes.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
+import 'package:news_lab/core/utils/date_formatter.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
+import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
+import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
+import 'package:news_lab/features/fact_check/presentation/widgets/fact_check_badges.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ArticleDetailsView extends HookWidget {
@@ -16,11 +22,26 @@ class ArticleDetailsView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<LocalArticleBloc>(),
+    final authState = context.read<AuthBloc>().state;
+    final userId = authState is AuthAuthenticated ? authState.user.uid : '';
+    final articleId = article?.remoteId ?? '';
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<LocalArticleBloc>()),
+        BlocProvider(
+          create: (_) {
+            final bloc = sl<FactCheckBloc>();
+            if (articleId.isNotEmpty) {
+              bloc.add(LoadFactCheck(articleId: articleId, userId: userId));
+            }
+            return bloc;
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: _buildAppBar(context),
-        body: _buildBody(context),
+        body: _buildBody(context, articleId: articleId, userId: userId),
         floatingActionButton: _buildFab(),
       ),
     );
@@ -36,7 +57,8 @@ class ArticleDetailsView extends HookWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context,
+      {required String articleId, required String userId}) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +80,7 @@ class ArticleDetailsView extends HookWidget {
                         size: 14, color: Colors.black45),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDate(article!.publishedAt),
+                      formatDate(article!.publishedAt),
                       style: const TextStyle(
                           fontSize: 11, color: Colors.black45),
                     ),
@@ -99,6 +121,8 @@ class ArticleDetailsView extends HookWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                FactCheckBadges(articleId: articleId, userId: userId),
               ],
             ),
           ),
@@ -139,12 +163,4 @@ class ArticleDetailsView extends HookWidget {
     );
   }
 
-  String _formatDate(DateTime? dt) {
-    if (dt == null) return '';
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-  }
 }

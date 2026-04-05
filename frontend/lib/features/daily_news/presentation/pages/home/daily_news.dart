@@ -177,12 +177,18 @@ class ArticleListBody extends StatelessWidget {
           }
           return ListView.builder(
             itemCount: articles.length,
-            itemBuilder: (context, index) => ArticleWidget(
-              article: articles[index],
-              onArticlePressed: (article) => Navigator.pushNamed(
-                  context, AppRoutes.articleDetails,
-                  arguments: article),
-            ),
+            itemBuilder: (context, index) {
+              final article = articles[index];
+              return ArticleWidget(
+                article: article,
+                factCheck: article.remoteId != null
+                    ? state.factChecks[article.remoteId]
+                    : null,
+                onArticlePressed: (article) => Navigator.pushNamed(
+                    context, AppRoutes.articleDetails,
+                    arguments: article),
+              );
+            },
           );
         }
         return const SizedBox.shrink();

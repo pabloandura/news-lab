@@ -5,6 +5,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
 import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/features/fact_check/data/data_sources/fact_check_remote_data_source.dart';
+import 'package:news_lab/features/fact_check/data/repository/fact_check_repository_impl.dart';
+import 'package:news_lab/features/fact_check/domain/repository/fact_check_repository.dart';
+import 'package:news_lab/features/fact_check/domain/usecases/get_article_list_fact_checks_usecase.dart';
+import 'package:news_lab/features/fact_check/domain/usecases/get_fact_check_usecase.dart';
+import 'package:news_lab/features/fact_check/domain/usecases/submit_community_vote_usecase.dart';
+import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
 import 'package:news_lab/features/article_category/data/repository/article_category_repository_impl.dart';
 import 'package:news_lab/features/article_category/domain/repository/article_category_repository.dart';
@@ -75,6 +82,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<ArticleCategoryDataSource>(
       ArticleCategoryDataSourceImpl(sl()));
 
+  // ── fact_check data sources ───────────────────────────────────────────────
+  sl.registerSingleton<FactCheckRemoteDataSource>(
+      FactCheckRemoteDataSourceImpl(sl()));
+
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
       ArticleRepositoryImpl(sl(), sl(), sl()));
@@ -85,6 +96,8 @@ Future<void> initializeDependencies() async {
       JournalistProfileRepositoryImpl(sl(), sl()));
   sl.registerSingleton<ArticleCategoryRepository>(
       ArticleCategoryRepositoryImpl(sl()));
+  sl.registerSingleton<FactCheckRepository>(
+      FactCheckRepositoryImpl(sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -100,9 +113,14 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<DeleteArticleUseCase>(DeleteArticleUseCase(sl()));
   sl.registerSingleton<UpdateArticleUseCase>(UpdateArticleUseCase(sl()));
   sl.registerSingleton<GetCategoriesUseCase>(GetCategoriesUseCase(sl()));
+  sl.registerSingleton<GetFactCheckUseCase>(GetFactCheckUseCase(sl()));
+  sl.registerSingleton<SubmitCommunityVoteUseCase>(
+      SubmitCommunityVoteUseCase(sl()));
+  sl.registerSingleton<GetArticleListFactChecksUseCase>(
+      GetArticleListFactChecksUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
-  sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl()));
+  sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl()));
   sl.registerFactory<LocalArticleBloc>(
       () => LocalArticleBloc(sl(), sl(), sl()));
   sl.registerFactory<AuthBloc>(() => AuthBloc(sl(), sl(), sl()));
@@ -111,4 +129,6 @@ Future<void> initializeDependencies() async {
       () => ArticleCategoryCubit(sl()));
   sl.registerFactory<JournalistProfileBloc>(
       () => JournalistProfileBloc(sl(), sl(), sl()));
+  sl.registerFactory<FactCheckBloc>(
+      () => FactCheckBloc(sl(), sl()));
 }

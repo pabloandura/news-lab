@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
+import 'package:news_lab/features/fact_check/domain/entities/fact_check_entity.dart';
 
 abstract class RemoteArticlesState extends Equatable {
   final List<ArticleEntity>? articles;
@@ -16,8 +17,19 @@ class RemoteArticlesLoading extends RemoteArticlesState {
 }
 
 class RemoteArticlesDone extends RemoteArticlesState {
-  const RemoteArticlesDone(List<ArticleEntity> articles)
-      : super(articles: articles);
+  final Map<String, FactCheckEntity> factChecks;
+
+  const RemoteArticlesDone(
+    List<ArticleEntity> articles, {
+    this.factChecks = const {},
+  }) : super(articles: articles);
+
+  RemoteArticlesDone withFactChecks(Map<String, FactCheckEntity> factChecks) {
+    return RemoteArticlesDone(articles!, factChecks: factChecks);
+  }
+
+  @override
+  List<Object?> get props => [articles, factChecks];
 }
 
 class RemoteArticlesError extends RemoteArticlesState {

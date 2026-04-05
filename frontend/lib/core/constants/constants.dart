@@ -6,3 +6,5 @@ const String kDefaultImage =
     'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';
 const String articlesCollection = 'articles';
 const String articlesThumbnailStoragePath = 'media/articles';
+const String factChecksCollection = 'fact_checks';
+const String votesSubcollection = 'votes';
