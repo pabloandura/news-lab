@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_lab/config/routes/route_args.dart';
 import 'package:news_lab/config/routes/routes.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
+import 'package:news_lab/core/utils/date_formatter.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
@@ -116,6 +117,7 @@ class JournalistProfilePage extends StatelessWidget {
     if (state is ArticleUpdateSuccess) return state.articles;
     return null;
   }
+
 }
 
 // ---------------------------------------------------------------------------
@@ -282,7 +284,7 @@ class _ArticleInfo extends StatelessWidget {
                 const Icon(Icons.access_time, size: 12, color: Colors.black45),
                 const SizedBox(width: 4),
                 Text(
-                  _formatDate(article.publishedAt!),
+                  formatDateISO(article.publishedAt!),
                   style: const TextStyle(fontSize: 11, color: Colors.black45),
                 ),
               ],
@@ -292,10 +294,6 @@ class _ArticleInfo extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime dt) {
-    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-'
-        '${dt.day.toString().padLeft(2, '0')}';
-  }
 }
 
 class _OwnerActions extends StatelessWidget {

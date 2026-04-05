@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:news_lab/core/constants/constants.dart';
 import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
@@ -21,24 +22,24 @@ class ArticleRepositoryImpl implements ArticleRepository {
   Future<Result<List<ArticleEntity>>> getNewsArticles(
       {String? category}) async {
     try {
-      final httpFuture = _newsApiService.getNewsArticles(
-        apiKey: newsAPIKey,
-        country: countryQuery,
-        category: category ?? categoryQuery,
-      );
-      final firestoreFuture =
-          _remoteDataSource.getArticles(category: category);
+      final firestoreArticles =
+          await _remoteDataSource.getArticles(category: category);
 
-      final httpResponse = await httpFuture;
-      final firestoreArticles = await firestoreFuture;
-
-      if (httpResponse.response.statusCode == HttpStatus.ok) {
-        final apiArticles =
-            httpResponse.data.map((m) => m.toEntity()).toList();
-        return Success([...firestoreArticles, ...apiArticles]);
+      List<ArticleEntity> apiArticles = [];
+      try {
+        final httpResponse = await _newsApiService.getNewsArticles(
+          apiKey: newsAPIKey,
+          country: countryQuery,
+          category: category ?? categoryQuery,
+        );
+        if (httpResponse.response.statusCode == HttpStatus.ok) {
+          apiArticles = httpResponse.data.map((m) => m.toEntity()).toList();
+        }
+      } on Exception catch (e) {
+        debugPrint('[ArticleRepository] NewsAPI unavailable: $e');
       }
 
-      return Success(firestoreArticles);
+      return Success([...firestoreArticles, ...apiArticles]);
     } on Exception catch (e) {
       return Failure(e);
     }
