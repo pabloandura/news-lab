@@ -1,3 +1,22 @@
+# credentials
 /credentials
+
+# starter project (assignment scaffold, separate repo)
 starter-project/
+
+# logs
 logs_flutter.md
+log.md
+
+# NestJS services
+services/**/node_modules
+services/**/dist
+services/**/.env
+
+# shared types
+types/node_modules
+types/dist
+
+# VS Code
+.vscode/
+
