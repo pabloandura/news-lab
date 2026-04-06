@@ -6,7 +6,7 @@ A running log of checkpoints as the project progresses. Each checkpoint captures
 
 ## Checkpoint 1 — Minimum Delivery Complete
 
-**State of the project:** All acceptance criteria in `ACCEPTANCE_CRITERIA.md` are met. The app compiles and runs on Android and macOS.
+**State of the project:** All acceptance criteria in `ACCEPTANCE_CRITERIA.md` are met. The app compiles and runs on all potential environments.
 
 **What was built:**
 - Firebase project configured (Firestore, Storage, Auth — email/password)
@@ -30,24 +30,27 @@ A running log of checkpoints as the project progresses. Each checkpoint captures
 - Floor ORM for local SQLite (already in the codebase — learned it by reading the existing `daily_news` feature)
 - Platform-specific setup: CocoaPods, macOS sandbox entitlements
 
-**What to follow up with:**
+**What I quickly followed up with:**
 - Article editing and deletion UI for articles the journalist has already published
-- Pagination for both the API and Firestore queries
 - Optimistic UI on publish
 
 ---
 
 ## Checkpoint 2 — Overdelivery Features Complete
 
-**State of the project:** Three NestJS microservices built and running locally. AI-powered fact-checking, bias detection, and similar article recommendations integrated into the article detail page. Journalist profile page with edit/delete actions. GCP infrastructure written and ready to deploy.
+**A moment to think**:** I thought of the initial proposition: "You are a journalist and **as a journalist, you would love to upload your own articles to the app so that society can benefit from your genius**.". And then I though, "What else would a journalist love to have in an app like this? What would make their life easier, their work more impactful, or their experience more enjoyable?".
+Therefore I decided to build some AI-powered features that would enhance the value of the app for journalists and readers alike, such as fact-checking, bias detection, and similar article recommendations. I also wanted to create a journalist profile page where they could manage their articles and see their impact on the audience.
+
+**State of the project:** Three NestJS microservices built and running locally. 
+Flutter features built to consume the microservices and deployed to production. GCP API Gateway routing requests to the microservices with authentication. CI/CD pipeline set up for automated deployments on push to main.
 
 **What was built:**
 
 *Microservices (Node.js / NestJS):*
-- `services/fact-checker` — receives an article, calls a local Ollama LLM, returns a structured fact-check verdict; caches the result in Firestore
-- `services/polarizer` — same pattern for bias detection (left / center / right lean + confidence score)
-- `services/sensemaker` — uses Ollama embeddings to find thematically similar articles from the feed
-- `types/` — shared TypeScript interfaces package (`@news-lab/types`) consumed by all three services to prevent schema drift
+1. `fact-checker`: receives an article, calls a Vertex AI model in production (Mistral in local development), returns a structured fact-check verdict; caches the result in Firestore.
+2. `polarizer`: same pattern for bias detection (left / center / right lean + confidence score)
+3. `sensemaker`: uses Vertex AI embeddings to find thematically similar articles from the feed. Shared TypeScript interfaces package (`@news-lab/types`) consumed by all three services to prevent schema drift.
+4. `Journalist profile` feature with list of the signed-in user's articles, edit article page, delete with confirmation.
 
 *Flutter features:*
 - `fact_check` feature — `FactCheckBloc`, `BotCheckApiDataSource`, `FactCheckRemoteDataSource` (Firestore cache), community vote submission, fact-check badges on article detail
@@ -63,18 +66,17 @@ A running log of checkpoints as the project progresses. Each checkpoint captures
 - `justfile` at repo root unifying all dev, test, lint, build, and deploy commands across the monorepo
 
 **What I learned at this checkpoint:**
-- NestJS module/controller/service structure and how it maps to the same clean architecture separation used in Flutter
-- Ollama local LLM APIs: model prompting, structured JSON output, embedding endpoints
+- I'd already knew NestJS well and that is why it was selected.
+- To prevent running a bill while developing locally against Vertex AI, I set up a local Ollama instance with the Mistral 7B model and implemented an adapter pattern in the microservices to switch between the local and production LLMs based on environment. This allowed me to develop and test the AI features without incurring GCP costs.
 - GCP API Gateway: OpenAPI spec authoring, service-account-based backend auth to Cloud Run
 - `adb reverse` for forwarding device localhost ports to the Mac during development
 - Shared npm packages with local `file:` references across a monorepo
-- How to split a complex screen (article detail) into independently-scoped BLoCs without coupling their lifecycles
+- Learned about `just` files a whole lot more than initially. Since I was used to Docker Compose but we are working with Flutter. I needed a way to unify all the different commands for running the app, the microservices, the tests, the linters, and the deployments. `just` files turned out to be a great solution for that, allowing me to define simple aliases for complex commands and keep everything organized in one place.
 
 **What to follow up with:**
-- Deploy Ollama to a GPU-backed Cloud Run instance so the services work without a local machine
-- Enable the Cloud Build trigger so deploys happen automatically on push to main
-- Pagination on the home feed and journalist profile article list
-- Offline-first publish flow using the Floor ORM already in the codebase
+- Will improve the UX/UI to loose this generic setup that I learned from the docs/videos.
+- Pagination on the home feed and journalist profile article list (an easy one).
+- Consider additional alternatives that I may be missing in hindsight of these huge triple services. Will probably run it through v0 from Vercel to see what it comes up with (besides the UI improvements that gets two birds with one stone).
 
 ---
 
