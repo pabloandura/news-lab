@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:news_lab/core/constants/constants.dart';
-import 'package:news_lab/core/domain/entities/article_entity.dart';
+import 'package:news_lab/features/journalist_profile/data/models/journalist_article_model.dart';
 
 abstract class JournalistProfileDataSource {
-  Future<List<ArticleEntity>> getArticlesByAuthor(String authorId);
+  Future<List<JournalistArticleModel>> getArticlesByAuthor(String authorId);
   Future<void> deleteArticle(String articleId);
   Future<void> updateArticle(
     String articleId, {
@@ -21,13 +21,13 @@ class JournalistProfileDataSourceImpl implements JournalistProfileDataSource {
   JournalistProfileDataSourceImpl(this._firestore);
 
   @override
-  Future<List<ArticleEntity>> getArticlesByAuthor(String authorId) async {
+  Future<List<JournalistArticleModel>> getArticlesByAuthor(String authorId) async {
     final snapshot = await _firestore
         .collection(articlesCollection)
         .where('authorId', isEqualTo: authorId)
         .orderBy('publishedAt', descending: true)
         .get();
-    return snapshot.docs.map(_docToEntity).toList();
+    return snapshot.docs.map(JournalistArticleModel.fromRawData).toList();
   }
 
   @override
@@ -57,25 +57,5 @@ class JournalistProfileDataSourceImpl implements JournalistProfileDataSource {
       'category': category ?? '',
       'thumbnailUrl': thumbnailUrl,
     });
-  }
-
-  static ArticleEntity _docToEntity(
-      QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data();
-    return ArticleEntity(
-      remoteId: doc.id,
-      author: data['author'] as String?,
-      authorId: data['authorId'] as String?,
-      title: data['title'] as String?,
-      description: data['description'] as String?,
-      content: data['content'] as String?,
-      imageUrl: (data['thumbnailUrl'] as String?)?.isNotEmpty == true
-          ? data['thumbnailUrl'] as String
-          : null,
-      category: (data['category'] as String?)?.isNotEmpty == true
-          ? data['category'] as String
-          : null,
-      publishedAt: (data['publishedAt'] as Timestamp?)?.toDate(),
-    );
   }
 }

@@ -14,8 +14,8 @@ class JournalistProfileRepositoryImpl implements JournalistProfileRepository {
   Future<Result<List<ArticleEntity>>> getArticlesByAuthor(
       String authorId) async {
     try {
-      final entities = await _dataSource.getArticlesByAuthor(authorId);
-      return Success(entities);
+      final models = await _dataSource.getArticlesByAuthor(authorId);
+      return Success(models.map((m) => m.toEntity()).toList());
     } on Exception catch (e) {
       return Failure(e);
     }
