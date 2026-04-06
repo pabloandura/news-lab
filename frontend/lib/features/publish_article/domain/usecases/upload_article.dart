@@ -1,4 +1,5 @@
 import 'package:news_lab/core/resources/result.dart';
+import 'package:news_lab/core/usecase/usecase.dart';
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 
 class UploadArticleParams {
@@ -21,11 +22,13 @@ class UploadArticleParams {
   });
 }
 
-class UploadArticleUseCase {
+class UploadArticleUseCase
+    implements UseCase<Result<void>, UploadArticleParams> {
   final PublishArticleRepository _repository;
 
   UploadArticleUseCase(this._repository);
 
+  @override
   Future<Result<void>> call(UploadArticleParams params) {
     return _repository.uploadArticle(
       authorId: params.authorId,

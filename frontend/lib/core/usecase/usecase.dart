@@ -5,3 +5,7 @@ abstract class UseCase<T, P> {
 abstract class NoParamsUseCase<T> {
   Future<T> call();
 }
+
+abstract class SyncNoParamsUseCase<T> {
+  T call();
+}
