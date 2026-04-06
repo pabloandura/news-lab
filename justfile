@@ -157,7 +157,7 @@ deploy-indexes:
 # ── Install ────────────────────────────────────────────────────────────────
 
 install-all:
-    cd types && npm install
+    cd types && npm install && npm run build
     cd services/fact-checker && npm install --legacy-peer-deps
     cd services/polarizer && npm install --legacy-peer-deps
     cd services/sensemaker && npm install --legacy-peer-deps
