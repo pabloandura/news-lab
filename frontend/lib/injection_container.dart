@@ -11,6 +11,7 @@ import 'package:news_lab/features/bias_report/data/repository/bias_report_reposi
 import 'package:news_lab/features/bias_report/domain/repository/bias_report_repository.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/get_bias_report_usecase.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/run_polarize_use_case.dart';
+import 'package:news_lab/features/bias_report/domain/usecases/watch_bias_report_use_case.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_bloc.dart';
 import 'package:news_lab/features/fact_check/data/data_sources/bot_check_api_data_source.dart';
 import 'package:news_lab/features/fact_check/data/data_sources/fact_check_remote_data_source.dart';
@@ -20,6 +21,7 @@ import 'package:news_lab/features/fact_check/domain/usecases/get_article_list_fa
 import 'package:news_lab/features/fact_check/domain/usecases/get_fact_check_usecase.dart';
 import 'package:news_lab/features/fact_check/domain/usecases/run_bot_check_use_case.dart';
 import 'package:news_lab/features/fact_check/domain/usecases/submit_community_vote_usecase.dart';
+import 'package:news_lab/features/fact_check/domain/usecases/watch_bot_check_use_case.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
 import 'package:news_lab/features/article_category/data/repository/article_category_repository_impl.dart';
@@ -149,8 +151,10 @@ Future<void> initializeDependencies() async {
       SubmitCommunityVoteUseCase(sl()));
   sl.registerSingleton<GetArticleListFactChecksUseCase>(
       GetArticleListFactChecksUseCase(sl()));
+  sl.registerSingleton<WatchBotCheckUseCase>(WatchBotCheckUseCase(sl()));
   sl.registerSingleton<GetBiasReportUseCase>(GetBiasReportUseCase(sl()));
   sl.registerSingleton<RunPolarizeUseCase>(RunPolarizeUseCase(sl()));
+  sl.registerSingleton<WatchBiasReportUseCase>(WatchBiasReportUseCase(sl()));
   sl.registerSingleton<GetSimilarArticlesUseCase>(
       GetSimilarArticlesUseCase(sl()));
 
@@ -165,9 +169,9 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<JournalistProfileBloc>(
       () => JournalistProfileBloc(sl(), sl(), sl()));
   sl.registerFactory<FactCheckBloc>(
-      () => FactCheckBloc(sl(), sl(), sl(), sl()));
+      () => FactCheckBloc(sl(), sl(), sl(), sl()));  // GetFactCheckUseCase, RunBotCheckUseCase, SubmitCommunityVoteUseCase, WatchBotCheckUseCase
   sl.registerFactory<BiasReportBloc>(
-      () => BiasReportBloc(sl(), sl(), sl()));
+      () => BiasReportBloc(sl(), sl(), sl()));       // GetBiasReportUseCase, RunPolarizeUseCase, WatchBiasReportUseCase
   sl.registerFactory<SimilarArticlesBloc>(
       () => SimilarArticlesBloc(sl()));
 }
