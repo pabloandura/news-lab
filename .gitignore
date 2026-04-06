@@ -29,3 +29,9 @@ types/*.d.ts
 # VS Code
 .vscode/
 
+# Firebase config files with API keys (keep local, never commit)
+frontend/lib/firebase_options.dart
+frontend/ios/Runner/GoogleService-Info.plist
+frontend/macos/Runner/GoogleService-Info.plist
+frontend/android/app/google-services.json
+
