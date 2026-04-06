@@ -3,6 +3,7 @@ import 'package:news_lab/features/bias_report/domain/entities/bias_report_entity
 
 abstract class BiasReportRepository {
   Future<Result<BiasReportEntity?>> getBiasReport({required String articleId});
+  Future<Result<Map<String, BiasReportEntity>>> batchGetBiasReports(List<String> articleIds);
   Future<Result<void>> runPolarize({
     required String articleId,
     required String text,

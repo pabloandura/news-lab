@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:news_lab/core/constants/constants.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/utils/date_formatter.dart';
+import 'package:news_lab/features/bias_report/domain/entities/bias_report_entity.dart';
 import 'package:news_lab/features/fact_check/domain/entities/fact_check_entity.dart';
 
 class ArticleWidget extends StatelessWidget {
   final ArticleEntity? article;
   final FactCheckEntity? factCheck;
+  final BiasReportEntity? biasReport;
   final bool? isRemovable;
   final void Function(ArticleEntity article)? onRemove;
   final void Function(ArticleEntity article)? onArticlePressed;
@@ -17,6 +19,7 @@ class ArticleWidget extends StatelessWidget {
     super.key,
     this.article,
     this.factCheck,
+    this.biasReport,
     this.onArticlePressed,
     this.isRemovable = false,
     this.onRemove,
@@ -80,9 +83,9 @@ class ArticleWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 13, color: Colors.black54),
                   ),
-                  if (factCheck != null) ...[
+                  if (factCheck != null || biasReport != null) ...[
                     const SizedBox(height: 6),
-                    _FactCheckBadgeRow(factCheck: factCheck!),
+                    _FactCheckBadgeRow(factCheck: factCheck, biasReport: biasReport),
                   ],
                   const SizedBox(height: 6),
                   Row(
@@ -127,9 +130,10 @@ class ArticleWidget extends StatelessWidget {
 /// Read-only badge row for list tiles. No BLoC, no voting controls.
 /// Tapping the tile navigates to detail where the full interactive version lives.
 class _FactCheckBadgeRow extends StatelessWidget {
-  final FactCheckEntity factCheck;
+  final FactCheckEntity? factCheck;
+  final BiasReportEntity? biasReport;
 
-  const _FactCheckBadgeRow({required this.factCheck});
+  const _FactCheckBadgeRow({this.factCheck, this.biasReport});
 
   @override
   Widget build(BuildContext context) {
@@ -137,21 +141,39 @@ class _FactCheckBadgeRow extends StatelessWidget {
       spacing: 6,
       runSpacing: 4,
       children: [
-        if (factCheck.botCheck != null)
+        if (factCheck?.botCheck != null)
           _Badge(
             icon: Icons.smart_toy_outlined,
-            label: 'Bot checked',
+            label: 'Fact checked',
             color: Colors.orange,
           ),
-        if (factCheck.communityCheck != null &&
-            factCheck.communityCheck!.totalVotes > 0)
+        if (factCheck?.communityCheck != null &&
+            factCheck!.communityCheck!.totalVotes > 0)
           _Badge(
             icon: Icons.people_outline,
-            label: '${factCheck.communityCheck!.totalVotes} votes',
+            label: '${factCheck!.communityCheck!.totalVotes} votes',
             color: Colors.blue,
+          ),
+        if (biasReport != null)
+          _Badge(
+            icon: Icons.balance_outlined,
+            label: _biasLabel(biasReport!.politicalLean),
+            color: _biasColor(biasReport!.politicalLean),
           ),
       ],
     );
+  }
+
+  String _biasLabel(double lean) {
+    if (lean < -0.3) return 'Left leaning';
+    if (lean > 0.3) return 'Right leaning';
+    return 'Centrist';
+  }
+
+  MaterialColor _biasColor(double lean) {
+    if (lean < -0.3) return Colors.blue;
+    if (lean > 0.3) return Colors.red;
+    return Colors.green;
   }
 }
 

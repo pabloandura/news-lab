@@ -11,6 +11,17 @@ class BiasReportRepositoryImpl implements BiasReportRepository {
   const BiasReportRepositoryImpl(this._dataSource, this._polarizeApi);
 
   @override
+  Future<Result<Map<String, BiasReportEntity>>> batchGetBiasReports(
+      List<String> articleIds) async {
+    try {
+      final models = await _dataSource.batchGetBiasReports(articleIds);
+      return Success(models.map((k, v) => MapEntry(k, v.toEntity())));
+    } on Exception catch (e) {
+      return Failure(e);
+    }
+  }
+
+  @override
   Future<Result<BiasReportEntity?>> getBiasReport(
       {required String articleId}) async {
     try {

@@ -1,3 +1,5 @@
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,17 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/re
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
 import 'package:news_lab/features/daily_news/presentation/widgets/article_tile.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
+
+String _articleKey(ArticleEntity article) {
+  if (article.remoteId != null && article.remoteId!.isNotEmpty) {
+    return article.remoteId!;
+  }
+  if (article.url != null && article.url!.isNotEmpty) {
+    return md5.convert(utf8.encode(article.url!)).toString();
+  }
+  return '';
+}
 
 class DailyNews extends StatelessWidget {
   const DailyNews({super.key});
@@ -41,9 +54,25 @@ class DailyNews extends StatelessWidget {
                 Navigator.pushNamed(context, AppRoutes.login);
               }
             },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(Icons.person_outline, color: Colors.black),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, authState) {
+                  if (authState is AuthAuthenticated) {
+                    final name = authState.user.displayName ?? authState.user.email;
+                    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+                    return CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Colors.black,
+                      child: Text(
+                        initial,
+                        style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }
+                  return const Icon(Icons.person_outline, color: Colors.black);
+                },
+              ),
             ),
           ),
           GestureDetector(
@@ -179,14 +208,17 @@ class ArticleListBody extends StatelessWidget {
             itemCount: articles.length,
             itemBuilder: (context, index) {
               final article = articles[index];
+              final key = _articleKey(article);
               return ArticleWidget(
                 article: article,
-                factCheck: article.remoteId != null
-                    ? state.factChecks[article.remoteId]
-                    : null,
-                onArticlePressed: (article) => Navigator.pushNamed(
-                    context, AppRoutes.articleDetails,
-                    arguments: article),
+                factCheck: key.isNotEmpty ? state.factChecks[key] : null,
+                biasReport: key.isNotEmpty ? state.biasReports[key] : null,
+                onArticlePressed: (article) {
+                  final bloc = context.read<RemoteArticlesBloc>();
+                  Navigator.pushNamed(context, AppRoutes.articleDetails,
+                          arguments: article)
+                      .then((_) => bloc.add(const RefreshFactChecks()));
+                },
               );
             },
           );
