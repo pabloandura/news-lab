@@ -1,3 +1,5 @@
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -32,7 +34,11 @@ class ArticleDetailsView extends HookWidget {
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
     final userId = authState is AuthAuthenticated ? authState.user.uid : '';
-    final articleId = article?.remoteId ?? '';
+    final articleId = article?.remoteId?.isNotEmpty == true
+        ? article!.remoteId!
+        : article?.url != null
+            ? md5.convert(utf8.encode(article!.url!)).toString()
+            : '';
 
     return MultiBlocProvider(
       providers: [
@@ -168,17 +174,19 @@ class ArticleDetailsView extends HookWidget {
                       return Row(
                         children: [
                           Expanded(child: BiasBadge(report: report)),
-                          GestureDetector(
-                            onTap: () => context.read<BiasReportBloc>().add(
-                                  RunPolarize(articleId: articleId, text: articleText),
-                                ),
-                            child: Icon(Ionicons.refresh_outline, size: 14, color: Colors.black38),
-                          ),
+                          if (userId.isNotEmpty)
+                            GestureDetector(
+                              onTap: () => context.read<BiasReportBloc>().add(
+                                    RunPolarize(articleId: articleId, text: articleText),
+                                  ),
+                              child: Icon(Ionicons.refresh_outline, size: 14, color: Colors.black38),
+                            ),
                         ],
                       );
                     }
                     return PolarizeButton(
                       articleId: articleId,
+                      userId: userId,
                       text: articleText,
                     );
                   },

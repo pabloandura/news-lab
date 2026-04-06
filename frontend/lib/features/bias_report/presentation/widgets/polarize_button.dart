@@ -11,11 +11,13 @@ import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_stat
 /// Must be placed inside a [BiasReportBloc] scope.
 class PolarizeButton extends StatelessWidget {
   final String articleId;
+  final String userId;
   final String text;
 
   const PolarizeButton({
     super.key,
     required this.articleId,
+    required this.userId,
     required this.text,
   });
 
@@ -31,7 +33,7 @@ class PolarizeButton extends StatelessWidget {
         if (hasReport) return const SizedBox.shrink();
 
         final isProcessing = state is BiasReportProcessing;
-        final isDisabled = articleId.isEmpty || isProcessing;
+        final isDisabled = userId.isEmpty || articleId.isEmpty || text.length < 50 || isProcessing;
 
         return GestureDetector(
           onTap: isDisabled
