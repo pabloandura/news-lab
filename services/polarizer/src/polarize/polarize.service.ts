@@ -15,7 +15,12 @@ interface BiasAnalysis {
 
 // ── Prompt ────────────────────────────────────────────────────────────────
 
-const BIAS_PROMPT = `You are a media bias analyst. Analyze the following news article for political lean, emotional language, and framing techniques.
+const BIAS_PROMPT = `You are a media bias analyst. Analyze the FRAMING AND AUTHORIAL PERSPECTIVE of the following article — not the topic itself.
+
+CRITICAL: Score the direction of the author's stance, not what the article is about.
+- Anti-union, anti-regulation, pro-gun, anti-immigration, anti-government framing = RIGHT-leaning (POSITIVE score)
+- Pro-union, pro-regulation, anti-gun, pro-immigration, pro-government framing = LEFT-leaning (NEGATIVE score)
+- Neutral/balanced reporting = near 0.0
 
 Return ONLY valid JSON matching this exact schema:
 {
@@ -81,15 +86,17 @@ export class PolarizeService {
 
     try {
       const raw = await this.llm.generate(BIAS_PROMPT + text);
+      this.logger.log(`Raw LLM response: ${raw}`);
       const parsed = JSON.parse(raw) as BiasAnalysis;
+      this.logger.log(`Parsed politicalLean=${parsed.politicalLean} (type=${typeof parsed.politicalLean})`);
 
       return {
-        politicalLean: Number(parsed.politicalLean) || 0,
-        emotionalLanguageScore: Number(parsed.emotionalLanguageScore) || 0,
+        politicalLean: parsed.politicalLean != null ? Number(parsed.politicalLean) : 0,
+        emotionalLanguageScore: parsed.emotionalLanguageScore != null ? Number(parsed.emotionalLanguageScore) : 0,
         framingNotes: Array.isArray(parsed.framingNotes) ? parsed.framingNotes : [],
       };
     } catch (err) {
-      this.logger.warn(`Failed to parse Gemini bias analysis response: ${err}`);
+      this.logger.warn(`Failed to parse LLM bias analysis response: ${err}`);
       return fallback;
     }
   }
