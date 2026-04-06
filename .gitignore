@@ -1,5 +1,6 @@
 # credentials
 /credentials
+services/credentials/
 
 # starter project (assignment scaffold, separate repo)
 starter-project/
