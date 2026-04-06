@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
-import { EmbeddingService } from '../embedding/embedding.service.js';
+import { EMBEDDING_SERVICE } from '../embedding/embedding.port.js';
+import type { IEmbeddingService } from '../embedding/embedding.port.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { AppConfig } from '../config/configuration.js';
 import { NewsApiSource } from './sources/newsapi.source.js';
@@ -18,7 +19,7 @@ export class IngestService {
   private readonly logger = new Logger(IngestService.name);
 
   constructor(
-    private readonly embedding: EmbeddingService,
+    @Inject(EMBEDDING_SERVICE) private readonly embedding: IEmbeddingService,
     private readonly firebase: FirebaseService,
     private readonly config: ConfigService<AppConfig, true>,
     private readonly newsApi: NewsApiSource,

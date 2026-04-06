@@ -30,8 +30,8 @@ export class NewsApiSource {
       return [];
     }
 
-    const url = `https://newsapi.org/v2/top-headlines?language=en&pageSize=${Math.min(maxResults, 100)}&apiKey=${key}`;
-    const res = await fetch(url);
+    const url = `https://newsapi.org/v2/top-headlines?language=en&pageSize=${Math.min(maxResults, 100)}`;
+    const res = await fetch(url, { headers: { 'X-Api-Key': key } });
     if (!res.ok) {
       this.logger.warn(`NewsAPI returned ${res.status} — skipping`);
       return [];
