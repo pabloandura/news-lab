@@ -9,7 +9,7 @@ steps:
   - name: node:20
     id: install
     dir: services/fact-checker
-    args: ['npm', 'ci']
+    args: ['npm', 'ci', '--legacy-peer-deps']
 
   # Validate shared contract
   - name: node:20
@@ -25,14 +25,16 @@ steps:
     args: ['npm', 'test']
     waitFor: ['typecheck']
 
-  # Build Docker image
+  # Build Docker image (build context = repo root for multi-stage types copy)
   - name: gcr.io/cloud-builders/docker
     id: build
     args:
       - build
+      - -f
+      - services/fact-checker/Dockerfile
       - -t
       - gcr.io/$PROJECT_ID/fact-checker:$COMMIT_SHA
-      - services/fact-checker
+      - .
     waitFor: ['test']
 
   # Push to Artifact Registry
