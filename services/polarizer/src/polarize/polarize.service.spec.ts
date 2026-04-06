@@ -1,15 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PolarizeService } from './polarize.service.js';
-import { VertexService } from '../vertex/vertex.service.js';
+import { LLM_SERVICE } from '../llm/llm.port.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGenerateContent = jest.fn();
-
-const mockVertexService = {
-  biasAnalyzer: { generateContent: mockGenerateContent },
-};
+const mockGenerate = jest.fn();
+const mockLlmService = { generate: mockGenerate };
 
 const mockSet = jest.fn().mockResolvedValue(undefined);
 const mockFirebaseService = {
@@ -19,16 +16,6 @@ const mockFirebaseService = {
     }),
   },
 };
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function geminiResponse(json: unknown) {
-  return {
-    response: {
-      candidates: [{ content: { parts: [{ text: JSON.stringify(json) }] } }],
-    },
-  };
-}
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
@@ -41,7 +28,7 @@ describe('PolarizeService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PolarizeService,
-        { provide: VertexService, useValue: mockVertexService },
+        { provide: LLM_SERVICE, useValue: mockLlmService },
         { provide: FirebaseService, useValue: mockFirebaseService },
       ],
     }).compile();
@@ -55,8 +42,8 @@ describe('PolarizeService', () => {
 
   describe('triggerAsync', () => {
     it('writes biasReport to Firestore with correct scores', async () => {
-      mockGenerateContent.mockResolvedValueOnce(
-        geminiResponse({
+      mockGenerate.mockResolvedValueOnce(
+        JSON.stringify({
           politicalLean: 0.6,
           emotionalLanguageScore: 0.75,
           framingNotes: ['loaded adjectives', 'appeal to fear'],
@@ -79,8 +66,8 @@ describe('PolarizeService', () => {
     });
 
     it('clamps politicalLean to [-1, 1]', async () => {
-      mockGenerateContent.mockResolvedValueOnce(
-        geminiResponse({ politicalLean: 2.5, emotionalLanguageScore: 0.5, framingNotes: [] }),
+      mockGenerate.mockResolvedValueOnce(
+        JSON.stringify({ politicalLean: 2.5, emotionalLanguageScore: 0.5, framingNotes: [] }),
       );
 
       service.triggerAsync({ articleId: 'art-2', text: 'A'.repeat(100) });
@@ -95,8 +82,8 @@ describe('PolarizeService', () => {
     });
 
     it('clamps emotionalLanguageScore to [0, 1]', async () => {
-      mockGenerateContent.mockResolvedValueOnce(
-        geminiResponse({ politicalLean: 0, emotionalLanguageScore: -0.5, framingNotes: [] }),
+      mockGenerate.mockResolvedValueOnce(
+        JSON.stringify({ politicalLean: 0, emotionalLanguageScore: -0.5, framingNotes: [] }),
       );
 
       service.triggerAsync({ articleId: 'art-3', text: 'A'.repeat(100) });
@@ -110,10 +97,8 @@ describe('PolarizeService', () => {
       );
     });
 
-    it('handles malformed Gemini response gracefully', async () => {
-      mockGenerateContent.mockResolvedValueOnce({
-        response: { candidates: [{ content: { parts: [{ text: 'not json' }] } }] },
-      });
+    it('handles malformed LLM response gracefully', async () => {
+      mockGenerate.mockResolvedValueOnce('not json');
 
       service.triggerAsync({ articleId: 'art-4', text: 'A'.repeat(100) });
       await new Promise((r) => setTimeout(r, 50));
@@ -132,8 +117,8 @@ describe('PolarizeService', () => {
     });
 
     it('does not throw when Firestore write fails', async () => {
-      mockGenerateContent.mockResolvedValueOnce(
-        geminiResponse({ politicalLean: 0, emotionalLanguageScore: 0, framingNotes: [] }),
+      mockGenerate.mockResolvedValueOnce(
+        JSON.stringify({ politicalLean: 0, emotionalLanguageScore: 0, framingNotes: [] }),
       );
       mockSet.mockRejectedValueOnce(new Error('Firestore unavailable'));
 

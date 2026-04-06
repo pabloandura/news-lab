@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { LlmService } from '../llm/llm.service.js';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { LLM_SERVICE } from '../llm/llm.port.js';
+import type { ILlmService } from '../llm/llm.port.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { PolarizeRequestDto } from './dto/polarize-request.dto.js';
 import { BiasReport } from '@news-lab/types';
@@ -40,7 +41,7 @@ export class PolarizeService {
   private readonly ARTICLES_COLLECTION = 'articles';
 
   constructor(
-    private readonly llm: LlmService,
+    @Inject(LLM_SERVICE) private readonly llm: ILlmService,
     private readonly firebase: FirebaseService,
   ) {}
 
@@ -86,9 +87,8 @@ export class PolarizeService {
 
     try {
       const raw = await this.llm.generate(BIAS_PROMPT + text);
-      this.logger.log(`Raw LLM response: ${raw}`);
+      this.logger.debug(`Raw LLM response: ${raw}`);
       const parsed = JSON.parse(raw) as BiasAnalysis;
-      this.logger.log(`Parsed politicalLean=${parsed.politicalLean} (type=${typeof parsed.politicalLean})`);
 
       return {
         politicalLean: parsed.politicalLean != null ? Number(parsed.politicalLean) : 0,
