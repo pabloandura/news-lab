@@ -1,12 +1,11 @@
 const String newsAPIBaseURL = 'https://newsapi.org/v2';
 
-// Microservices API Gateway URL.
-// Phase 1: points directly to the fact-checker Cloud Run service.
-// Phase 2: update to the API Gateway URL once established.
+// API Gateway URL — single entry point for all microservices.
+// Get the hostname after running: just gateway-url
 // Override at build time: --dart-define=MICROSERVICES_BASE_URL=http://localhost:3000
 const String microservicesBaseUrl = String.fromEnvironment(
   'MICROSERVICES_BASE_URL',
-  defaultValue: 'https://fact-checker-<hash>-uc.a.run.app',
+  defaultValue: 'https://news-lab-gateway-<hash>.uc.gateway.dev',
 );
 const String newsAPIKey = String.fromEnvironment('NEWS_API_KEY');
 const String countryQuery = 'us';
