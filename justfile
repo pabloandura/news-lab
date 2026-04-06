@@ -20,6 +20,20 @@ adb-forward:
     adb reverse tcp:3003 tcp:3003
     adb reverse tcp:11434 tcp:11434
 
+# Start all 3 services + Flutter concurrently (logs prefixed, Ctrl-C stops all)
+dev-all:
+    #!/usr/bin/env bash
+    if ! pgrep -x ollama > /dev/null; then
+        echo "⚠  Ollama is not running. Start it with: ollama serve"
+        exit 1
+    fi
+    trap 'kill 0' SIGINT SIGTERM
+    PORT=3001 npm --prefix services/polarizer    run start:dev 2>&1 | sed 's/^/[polarizer]    /' &
+    PORT=3002 npm --prefix services/fact-checker run start:dev 2>&1 | sed 's/^/[fact-checker] /' &
+    PORT=3003 npm --prefix services/sensemaker   run start:dev 2>&1 | sed 's/^/[sensemaker]   /' &
+    (cd frontend && flutter run) 2>&1 | sed 's/^/[flutter]      /' &
+    wait
+
 # Run a service on a fixed local port (polarizer=3001, fact-checker=3002)
 dev-local service:
     #!/usr/bin/env bash
