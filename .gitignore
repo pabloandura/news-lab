@@ -13,10 +13,15 @@ log.md
 services/**/node_modules
 services/**/dist
 services/**/.env
+services/**/*.tsbuildinfo
 
 # shared types
 types/node_modules
 types/dist
+# compiled artifacts that leak to package root when tsc is run without tsconfig
+types/*.js
+types/*.js.map
+types/*.d.ts
 
 # VS Code
 .vscode/
