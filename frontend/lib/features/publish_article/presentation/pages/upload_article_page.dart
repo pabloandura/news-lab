@@ -258,9 +258,22 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
       return;
     }
 
+    final displayName = authState.user.displayName?.trim();
+    if (displayName == null || displayName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            'Your account has no display name. Please update your profile before publishing.',
+          ),
+        ),
+      );
+      return;
+    }
+
     context.read<UploadArticleBloc>().add(UploadArticleRequested(
           authorId: authState.user.uid,
-          author: authState.user.displayName ?? authState.user.email,
+          author: displayName,
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           content: _contentController.text.trim(),
