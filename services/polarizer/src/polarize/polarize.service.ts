@@ -32,7 +32,7 @@ Article:
 @Injectable()
 export class PolarizeService {
   private readonly logger = new Logger(PolarizeService.name);
-  private readonly FACT_CHECKS_COLLECTION = 'fact_checks';
+  private readonly ARTICLES_COLLECTION = 'articles';
 
   constructor(
     private readonly vertex: VertexService,
@@ -99,7 +99,7 @@ export class PolarizeService {
 
   private async writeResult(articleId: string, report: BiasReport): Promise<void> {
     await this.firebase.db
-      .collection(this.FACT_CHECKS_COLLECTION)
+      .collection(this.ARTICLES_COLLECTION)
       .doc(articleId)
       .set(
         {
@@ -111,7 +111,7 @@ export class PolarizeService {
         { merge: true },
       );
 
-    this.logger.log(`Wrote biasReport to fact_checks/${articleId}`);
+    this.logger.log(`Wrote biasReport to articles/${articleId}`);
   }
 
   private clamp(value: number, min: number, max: number): number {

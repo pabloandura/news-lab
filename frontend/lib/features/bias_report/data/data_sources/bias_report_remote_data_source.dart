@@ -14,7 +14,7 @@ class BiasReportRemoteDataSourceImpl implements BiasReportRemoteDataSource {
   @override
   Future<BiasReportModel?> getBiasReport({required String articleId}) async {
     final doc = await _firestore
-        .collection(factChecksCollection)
+        .collection(articlesCollection)
         .doc(articleId)
         .get();
 

@@ -82,7 +82,7 @@ class BiasReportBloc extends Bloc<BiasReportEvent, BiasReportState> {
     _cancel();
 
     _listener = _firestore
-        .collection(factChecksCollection)
+        .collection(articlesCollection)
         .doc(articleId)
         .snapshots()
         .listen((snap) {
