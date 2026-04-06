@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { LlmService } from '../llm/llm.service.js';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { LLM_SERVICE } from '../llm/llm.port.js';
+import type { ILlmService } from '../llm/llm.port.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { ClaimBusterService } from '../claimbuster/claimbuster.service.js';
 import { FactCheckRequestDto } from './dto/fact-check-request.dto.js';
@@ -53,7 +54,7 @@ export class FactCheckService {
   private readonly FACT_CHECKS_COLLECTION = 'fact_checks';
 
   constructor(
-    private readonly llm: LlmService,
+    @Inject(LLM_SERVICE) private readonly llm: ILlmService,
     private readonly firebase: FirebaseService,
     private readonly claimBuster: ClaimBusterService,
   ) {}

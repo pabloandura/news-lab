@@ -13,7 +13,6 @@ import { AppConfig } from '../config/configuration.js';
  * Register for a free key: https://idir.uta.edu/claimbuster/
  */
 
-const CLAIMBUSTER_API_URL = 'https://idir.uta.edu/api/v1/factcheck/claims/';
 const CHECK_WORTHY_THRESHOLD = 0.5;
 
 export interface ClaimScore {
@@ -26,9 +25,11 @@ export interface ClaimScore {
 export class ClaimBusterService {
   private readonly logger = new Logger(ClaimBusterService.name);
   private readonly apiKey: string | undefined;
+  private readonly apiUrl: string;
 
   constructor(private readonly config: ConfigService<AppConfig, true>) {
     this.apiKey = this.config.get('claimBuster.apiKey', { infer: true });
+    this.apiUrl = this.config.get('claimBuster.apiUrl', { infer: true });
     if (this.apiKey) {
       this.logger.log('ClaimBuster integration enabled');
     } else {
@@ -49,7 +50,7 @@ export class ClaimBusterService {
 
     try {
       const response = await axios.post<{ value: { text: string; score: number } }>(
-        CLAIMBUSTER_API_URL,
+        this.apiUrl,
         { input_claim: claimText },
         {
           headers: { 'x-api-key': this.apiKey },

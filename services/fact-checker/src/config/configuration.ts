@@ -1,4 +1,5 @@
 export interface AppConfig {
+  nodeEnv: string;
   port: number;
   gcp: {
     projectId: string;
@@ -10,10 +11,12 @@ export interface AppConfig {
   };
   claimBuster: {
     apiKey: string | undefined;
+    apiUrl: string;
   };
 }
 
 export default (): AppConfig => ({
+  nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3000', 10),
   gcp: {
     projectId: process.env.GCP_PROJECT_ID ?? 'news-lab-2ba2d',
@@ -25,5 +28,6 @@ export default (): AppConfig => ({
   },
   claimBuster: {
     apiKey: process.env.CLAIMBUSTER_API_KEY,
+    apiUrl: process.env.CLAIMBUSTER_API_URL ?? 'https://idir.uta.edu/api/v1/factcheck/claims/',
   },
 });

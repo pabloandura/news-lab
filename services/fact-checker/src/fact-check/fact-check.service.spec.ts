@@ -1,17 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FactCheckService } from './fact-check.service.js';
-import { VertexService } from '../vertex/vertex.service.js';
+import { LLM_SERVICE } from '../llm/llm.port.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { ClaimBusterService } from '../claimbuster/claimbuster.service.js';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGenerateContent = jest.fn();
-
-const mockVertexService = {
-  claimExtractor: { generateContent: mockGenerateContent },
-  claimEvaluator: { generateContent: mockGenerateContent },
-};
+const mockGenerate = jest.fn();
+const mockLlmService = { generate: mockGenerate };
 
 const mockSet = jest.fn().mockResolvedValue(undefined);
 const mockFirebaseService = {
@@ -29,16 +25,6 @@ const mockClaimBusterService = {
   ),
 };
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function geminiResponse(json: unknown) {
-  return {
-    response: {
-      candidates: [{ content: { parts: [{ text: JSON.stringify(json) }] } }],
-    },
-  };
-}
-
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('FactCheckService', () => {
@@ -50,7 +36,7 @@ describe('FactCheckService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FactCheckService,
-        { provide: VertexService, useValue: mockVertexService },
+        { provide: LLM_SERVICE, useValue: mockLlmService },
         { provide: FirebaseService, useValue: mockFirebaseService },
         { provide: ClaimBusterService, useValue: mockClaimBusterService },
       ],
@@ -66,13 +52,13 @@ describe('FactCheckService', () => {
   describe('triggerAsync', () => {
     it('writes botCheck to Firestore when claims are extracted and evaluated', async () => {
       // First call: claim extraction
-      mockGenerateContent
+      mockGenerate
         .mockResolvedValueOnce(
-          geminiResponse({ claims: ['The unemployment rate fell to 3.5%.', 'GDP grew 2% last quarter.'] }),
+          JSON.stringify({ claims: ['The unemployment rate fell to 3.5%.', 'GDP grew 2% last quarter.'] }),
         )
         // Second + third calls: per-claim evaluation
-        .mockResolvedValueOnce(geminiResponse({ verdict: 'supported', confidence: 0.9, reasoning: 'Matches BLS data' }))
-        .mockResolvedValueOnce(geminiResponse({ verdict: 'contested', confidence: 0.7, reasoning: 'Disputed by IMF' }));
+        .mockResolvedValueOnce(JSON.stringify({ verdict: 'supported', confidence: 0.9, reasoning: 'Matches BLS data' }))
+        .mockResolvedValueOnce(JSON.stringify({ verdict: 'contested', confidence: 0.7, reasoning: 'Disputed by IMF' }));
 
       service.triggerAsync({ articleId: 'art-1', text: 'A'.repeat(100) });
 
@@ -91,7 +77,7 @@ describe('FactCheckService', () => {
     });
 
     it('writes zero flagged when no claims are extracted', async () => {
-      mockGenerateContent.mockResolvedValueOnce(geminiResponse({ claims: [] }));
+      mockGenerate.mockResolvedValueOnce(JSON.stringify({ claims: [] }));
 
       service.triggerAsync({ articleId: 'art-2', text: 'A'.repeat(100) });
       await new Promise((r) => setTimeout(r, 50));
@@ -107,10 +93,8 @@ describe('FactCheckService', () => {
       );
     });
 
-    it('handles malformed Gemini extraction response gracefully', async () => {
-      mockGenerateContent.mockResolvedValueOnce({
-        response: { candidates: [{ content: { parts: [{ text: 'not json' }] } }] },
-      });
+    it('handles malformed LLM extraction response gracefully', async () => {
+      mockGenerate.mockResolvedValueOnce('not json');
 
       service.triggerAsync({ articleId: 'art-3', text: 'A'.repeat(100) });
       await new Promise((r) => setTimeout(r, 50));
@@ -125,7 +109,7 @@ describe('FactCheckService', () => {
     });
 
     it('does not throw when Firestore write fails', async () => {
-      mockGenerateContent.mockResolvedValueOnce(geminiResponse({ claims: [] }));
+      mockGenerate.mockResolvedValueOnce(JSON.stringify({ claims: [] }));
       mockSet.mockRejectedValueOnce(new Error('Firestore unavailable'));
 
       // Should not throw
