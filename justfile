@@ -13,6 +13,22 @@ dev-app:
 dev service:
     cd services/{{service}} && npm run start:dev
 
+# Forward device localhost → Mac for all dev services (run once per USB session)
+adb-forward:
+    adb reverse tcp:3001 tcp:3001
+    adb reverse tcp:3002 tcp:3002
+    adb reverse tcp:11434 tcp:11434
+
+# Run a service on a fixed local port (polarizer=3001, fact-checker=3002)
+dev-local service:
+    #!/usr/bin/env bash
+    case "{{service}}" in
+      polarizer)    PORT=3001 ;;
+      fact-checker) PORT=3002 ;;
+      *)            PORT=3000 ;;
+    esac
+    cd services/{{service}} && PORT=$PORT npm run start:dev
+
 # ── Test ───────────────────────────────────────────────────────────────────
 
 test-all:
