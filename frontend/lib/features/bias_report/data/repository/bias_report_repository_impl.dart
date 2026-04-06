@@ -33,4 +33,11 @@ class BiasReportRepositoryImpl implements BiasReportRepository {
       return Failure(e);
     }
   }
+
+  @override
+  Stream<BiasReportEntity?> watchBiasReport({required String articleId}) {
+    return _dataSource
+        .watchBiasReport(articleId: articleId)
+        .map((model) => model?.toEntity());
+  }
 }

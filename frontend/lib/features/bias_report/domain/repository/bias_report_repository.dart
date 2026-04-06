@@ -7,4 +7,5 @@ abstract class BiasReportRepository {
     required String articleId,
     required String text,
   });
+  Stream<BiasReportEntity?> watchBiasReport({required String articleId});
 }

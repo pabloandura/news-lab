@@ -9,7 +9,7 @@ class BiasReportModel extends BiasReportEntity {
     super.analyzedAt,
   });
 
-  factory BiasReportModel.fromMap(Map<String, dynamic> map) {
+  factory BiasReportModel.fromRawData(Map<String, dynamic> map) {
     return BiasReportModel(
       politicalLean: (map['politicalLean'] as num?)?.toDouble() ?? 0.0,
       emotionalLanguageScore:
