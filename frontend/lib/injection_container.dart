@@ -9,6 +9,7 @@ import 'package:news_lab/features/bias_report/data/data_sources/bias_report_remo
 import 'package:news_lab/features/bias_report/data/data_sources/polarize_api_data_source.dart';
 import 'package:news_lab/features/bias_report/data/repository/bias_report_repository_impl.dart';
 import 'package:news_lab/features/bias_report/domain/repository/bias_report_repository.dart';
+import 'package:news_lab/features/bias_report/domain/usecases/get_article_list_bias_reports_usecase.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/get_bias_report_usecase.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/run_polarize_use_case.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/watch_bias_report_use_case.dart';
@@ -31,9 +32,9 @@ import 'package:news_lab/features/article_category/presentation/cubit/article_ca
 import 'package:news_lab/features/auth/data/data_sources/auth_remote_data_source.dart';
 import 'package:news_lab/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:news_lab/features/auth/domain/repository/auth_repository.dart';
-import 'package:news_lab/features/auth/domain/usecases/get_current_user.dart';
 import 'package:news_lab/features/auth/domain/usecases/sign_in.dart';
 import 'package:news_lab/features/auth/domain/usecases/sign_out.dart';
+import 'package:news_lab/features/auth/domain/usecases/watch_auth_state.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/daily_news/data/data_sources/local/app_database.dart';
 import 'package:news_lab/features/daily_news/data/data_sources/remote/news_api_service.dart';
@@ -138,7 +139,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<RemoveArticleUseCase>(RemoveArticleUseCase(sl()));
   sl.registerSingleton<SignInUseCase>(SignInUseCase(sl()));
   sl.registerSingleton<SignOutUseCase>(SignOutUseCase(sl()));
-  sl.registerSingleton<GetCurrentUserUseCase>(GetCurrentUserUseCase(sl()));
+  sl.registerSingleton<WatchAuthStateUseCase>(WatchAuthStateUseCase(sl()));
   sl.registerSingleton<UploadArticleUseCase>(UploadArticleUseCase(sl()));
   sl.registerSingleton<GetJournalistArticlesUseCase>(
       GetJournalistArticlesUseCase(sl()));
@@ -153,13 +154,15 @@ Future<void> initializeDependencies() async {
       GetArticleListFactChecksUseCase(sl()));
   sl.registerSingleton<WatchBotCheckUseCase>(WatchBotCheckUseCase(sl()));
   sl.registerSingleton<GetBiasReportUseCase>(GetBiasReportUseCase(sl()));
+  sl.registerSingleton<GetArticleListBiasReportsUseCase>(
+      GetArticleListBiasReportsUseCase(sl()));
   sl.registerSingleton<RunPolarizeUseCase>(RunPolarizeUseCase(sl()));
   sl.registerSingleton<WatchBiasReportUseCase>(WatchBiasReportUseCase(sl()));
   sl.registerSingleton<GetSimilarArticlesUseCase>(
       GetSimilarArticlesUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
-  sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl()));
+  sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl(), sl()));
   sl.registerFactory<LocalArticleBloc>(
       () => LocalArticleBloc(sl(), sl(), sl()));
   sl.registerFactory<AuthBloc>(() => AuthBloc(sl(), sl(), sl()));

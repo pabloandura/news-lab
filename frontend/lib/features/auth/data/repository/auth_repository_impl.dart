@@ -17,4 +17,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   UserEntity? getCurrentUser() => _dataSource.getCurrentUser();
+
+  @override
+  Stream<UserEntity?> watchAuthState() => _dataSource.watchAuthState();
 }

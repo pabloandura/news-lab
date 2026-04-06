@@ -9,10 +9,15 @@ class UserModel extends UserEntity {
   });
 
   factory UserModel.fromFirebaseUser(User user) {
+    final email = user.email ?? '';
     return UserModel(
       uid: user.uid,
-      email: user.email ?? '',
-      displayName: user.displayName,
+      email: email,
+      displayName: user.displayName?.isNotEmpty == true
+          ? user.displayName
+          : email.isNotEmpty
+              ? email.split('@').first
+              : null,
     );
   }
 

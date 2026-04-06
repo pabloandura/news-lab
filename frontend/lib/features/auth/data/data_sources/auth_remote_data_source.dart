@@ -6,6 +6,7 @@ abstract class AuthRemoteDataSource {
       {required String email, required String password});
   Future<void> signOut();
   UserModel? getCurrentUser();
+  Stream<UserModel?> watchAuthState();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -30,5 +31,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   UserModel? getCurrentUser() {
     final user = _firebaseAuth.currentUser;
     return user != null ? UserModel.fromFirebaseUser(user) : null;
+  }
+
+  @override
+  Stream<UserModel?> watchAuthState() {
+    return _firebaseAuth
+        .authStateChanges()
+        .map((user) => user != null ? UserModel.fromFirebaseUser(user) : null);
   }
 }

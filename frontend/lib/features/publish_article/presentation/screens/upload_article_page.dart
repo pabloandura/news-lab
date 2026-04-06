@@ -258,18 +258,9 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
       return;
     }
 
-    final displayName = authState.user.displayName?.trim();
-    if (displayName == null || displayName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(
-            'Your account has no display name. Please update your profile before publishing.',
-          ),
-        ),
-      );
-      return;
-    }
+    final displayName = authState.user.displayName?.trim().isNotEmpty == true
+        ? authState.user.displayName!.trim()
+        : authState.user.email.split('@').first;
 
     context.read<UploadArticleBloc>().add(UploadArticleRequested(
           authorId: authState.user.uid,
