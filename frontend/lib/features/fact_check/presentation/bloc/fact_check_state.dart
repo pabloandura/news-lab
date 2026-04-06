@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:news_lab/features/fact_check/domain/entities/fact_check_entity.dart';
 
-abstract class FactCheckState extends Equatable {
+sealed class FactCheckState extends Equatable {
   const FactCheckState();
 
   @override

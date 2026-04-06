@@ -8,7 +8,7 @@ class BotCheckModel extends BotCheckEntity {
     super.checkedAt,
   });
 
-  factory BotCheckModel.fromMap(Map<String, dynamic> map) {
+  factory BotCheckModel.fromRawData(Map<String, dynamic> map) {
     return BotCheckModel(
       flaggedSentencesPercent: (map['flaggedSentencesPercent'] as num?)?.toDouble() ?? 0.0,
       confidenceScore: (map['confidenceScore'] as num?)?.toDouble() ?? 0.0,
@@ -31,7 +31,7 @@ class CommunityCheckModel extends CommunityCheckEntity {
     super.userVote,
   });
 
-  factory CommunityCheckModel.fromMap(
+  factory CommunityCheckModel.fromRawData(
     Map<String, dynamic> map, {
     CommunityVote? userVote,
   }) {
@@ -58,7 +58,7 @@ class FactCheckModel extends FactCheckEntity {
     super.communityCheck,
   });
 
-  factory FactCheckModel.fromFirestore({
+  factory FactCheckModel.fromRawData({
     required String articleId,
     required DocumentSnapshot<Map<String, dynamic>> doc,
     required String? userVoteRaw,
@@ -67,13 +67,13 @@ class FactCheckModel extends FactCheckEntity {
 
     BotCheckEntity? botCheck;
     if (data != null && data['botCheck'] != null) {
-      botCheck = BotCheckModel.fromMap(data['botCheck'] as Map<String, dynamic>);
+      botCheck = BotCheckModel.fromRawData(data['botCheck'] as Map<String, dynamic>);
     }
 
     CommunityCheckEntity? communityCheck;
     if (data != null && data['communityCheck'] != null) {
       final userVote = userVoteRaw.toCommunityVote();
-      communityCheck = CommunityCheckModel.fromMap(
+      communityCheck = CommunityCheckModel.fromRawData(
         data['communityCheck'] as Map<String, dynamic>,
         userVote: userVote,
       );

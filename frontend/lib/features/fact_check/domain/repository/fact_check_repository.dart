@@ -20,4 +20,5 @@ abstract class FactCheckRepository {
     required String userId,
     required CommunityVote vote,
   });
+  Stream<BotCheckEntity?> watchBotCheck({required String articleId});
 }

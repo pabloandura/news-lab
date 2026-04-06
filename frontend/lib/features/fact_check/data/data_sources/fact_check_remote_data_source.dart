@@ -18,6 +18,8 @@ abstract class FactCheckRemoteDataSource {
     required String userId,
     required CommunityVote vote,
   });
+
+  Stream<BotCheckModel?> watchBotCheck({required String articleId});
 }
 
 class FactCheckRemoteDataSourceImpl implements FactCheckRemoteDataSource {
@@ -40,7 +42,7 @@ class FactCheckRemoteDataSourceImpl implements FactCheckRemoteDataSource {
           .where(FieldPath.documentId, whereIn: chunk)
           .get();
       for (final doc in snapshot.docs) {
-        results[doc.id] = FactCheckModel.fromFirestore(
+        results[doc.id] = FactCheckModel.fromRawData(
           articleId: doc.id,
           doc: doc,
           userVoteRaw: null, // list view is read-only; user vote loaded on detail
@@ -65,7 +67,7 @@ class FactCheckRemoteDataSourceImpl implements FactCheckRemoteDataSource {
       userVoteRaw = voteDoc.data()?['vote'] as String?;
     }
 
-    return FactCheckModel.fromFirestore(
+    return FactCheckModel.fromRawData(
       articleId: articleId,
       doc: factCheckDoc,
       userVoteRaw: userVoteRaw,
@@ -110,6 +112,19 @@ class FactCheckRemoteDataSourceImpl implements FactCheckRemoteDataSource {
         'vote': vote.toFirestoreString(),
         'votedAt': FieldValue.serverTimestamp(),
       });
+    });
+  }
+
+  @override
+  Stream<BotCheckModel?> watchBotCheck({required String articleId}) {
+    return _firestore
+        .collection(factChecksCollection)
+        .doc(articleId)
+        .snapshots()
+        .map((snap) {
+      final data = snap.data();
+      if (data == null || data['botCheck'] == null) return null;
+      return BotCheckModel.fromRawData(data['botCheck'] as Map<String, dynamic>);
     });
   }
 

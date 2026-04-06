@@ -67,4 +67,11 @@ class FactCheckRepositoryImpl implements FactCheckRepository {
       return Failure(e);
     }
   }
+
+  @override
+  Stream<BotCheckEntity?> watchBotCheck({required String articleId}) {
+    return _dataSource
+        .watchBotCheck(articleId: articleId)
+        .map((model) => model?.toEntity());
+  }
 }
