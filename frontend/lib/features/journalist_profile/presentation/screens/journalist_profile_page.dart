@@ -6,6 +6,8 @@ import 'package:news_lab/config/routes/route_args.dart';
 import 'package:news_lab/config/routes/routes.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/utils/date_formatter.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_lab/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
@@ -167,6 +169,19 @@ class _ProfileHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (args.isOwner)
+            IconButton(
+              tooltip: 'Sign out',
+              icon: const Icon(Icons.logout, color: Colors.black54),
+              onPressed: () {
+                context.read<AuthBloc>().add(const SignOutRequested());
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (_) => false,
+                );
+              },
+            ),
         ],
       ),
     );
