@@ -55,6 +55,9 @@ steps:
       - --region=us-central1
       - --platform=managed
       - --no-allow-unauthenticated
+      - --service-account=fact-checker-sa@$PROJECT_ID.iam.gserviceaccount.com
+      - --set-env-vars=GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=us-central1
+      - --set-secrets=CLAIMBUSTER_API_KEY=claimbuster-api-key:latest
     waitFor: ['push']
 
 # Trigger config (set in GCP Console or via gcloud):

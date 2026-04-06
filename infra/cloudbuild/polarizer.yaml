@@ -1,40 +1,49 @@
 steps:
+  # Install shared types
   - name: node:20
     id: install-types
     dir: types
     args: ['npm', 'ci']
 
+  # Install service dependencies
   - name: node:20
     id: install
     dir: services/polarizer
-    args: ['npm', 'ci']
+    args: ['npm', 'ci', '--legacy-peer-deps']
 
+  # Validate shared contract
   - name: node:20
     id: typecheck
     dir: services/polarizer
     args: ['npx', 'tsc', '--noEmit']
     waitFor: ['install-types', 'install']
 
+  # Run tests
   - name: node:20
     id: test
     dir: services/polarizer
     args: ['npm', 'test']
     waitFor: ['typecheck']
 
+  # Build Docker image (build context = repo root for multi-stage types copy)
   - name: gcr.io/cloud-builders/docker
     id: build
     args:
       - build
+      - -f
+      - services/polarizer/Dockerfile
       - -t
       - gcr.io/$PROJECT_ID/polarizer:$COMMIT_SHA
-      - services/polarizer
+      - .
     waitFor: ['test']
 
+  # Push to Artifact Registry
   - name: gcr.io/cloud-builders/docker
     id: push
     args: ['push', 'gcr.io/$PROJECT_ID/polarizer:$COMMIT_SHA']
     waitFor: ['build']
 
+  # Deploy to Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     id: deploy
     args:
@@ -46,8 +55,10 @@ steps:
       - --region=us-central1
       - --platform=managed
       - --no-allow-unauthenticated
+      - --service-account=polarizer-sa@$PROJECT_ID.iam.gserviceaccount.com
+      - --set-env-vars=GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=us-central1
     waitFor: ['push']
 
-# Trigger config:
+# Trigger config (set in GCP Console or via gcloud):
 #   includedFiles: ['services/polarizer/**', 'types/**']
 #   branch: ^main$
