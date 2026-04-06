@@ -36,7 +36,7 @@ class CheckArticleButton extends StatelessWidget {
         if (hasBotCheck) return const SizedBox.shrink();
 
         final isProcessing = state is FactCheckBotCheckProcessing;
-        final isDisabled = userId.isEmpty || isProcessing;
+        final isDisabled = userId.isEmpty || text.length < 50 || isProcessing;
 
         return GestureDetector(
           onTap: isDisabled
