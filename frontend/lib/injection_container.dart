@@ -5,6 +5,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
 import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/features/bias_report/data/data_sources/bias_report_remote_data_source.dart';
+import 'package:news_lab/features/bias_report/data/data_sources/polarize_api_data_source.dart';
+import 'package:news_lab/features/bias_report/data/repository/bias_report_repository_impl.dart';
+import 'package:news_lab/features/bias_report/domain/repository/bias_report_repository.dart';
+import 'package:news_lab/features/bias_report/domain/usecases/get_bias_report_usecase.dart';
+import 'package:news_lab/features/bias_report/domain/usecases/run_polarize_use_case.dart';
+import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_bloc.dart';
 import 'package:news_lab/features/fact_check/data/data_sources/bot_check_api_data_source.dart';
 import 'package:news_lab/features/fact_check/data/data_sources/fact_check_remote_data_source.dart';
 import 'package:news_lab/features/fact_check/data/repository/fact_check_repository_impl.dart';
@@ -90,6 +97,12 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<BotCheckApiDataSource>(
       BotCheckApiDataSourceImpl(sl(), sl()));
 
+  // ── bias_report data sources ──────────────────────────────────────────────
+  sl.registerSingleton<BiasReportRemoteDataSource>(
+      BiasReportRemoteDataSourceImpl(sl()));
+  sl.registerSingleton<PolarizeApiDataSource>(
+      PolarizeApiDataSourceImpl(sl(), sl()));
+
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
       ArticleRepositoryImpl(sl(), sl(), sl()));
@@ -102,6 +115,8 @@ Future<void> initializeDependencies() async {
       ArticleCategoryRepositoryImpl(sl()));
   sl.registerSingleton<FactCheckRepository>(
       FactCheckRepositoryImpl(sl(), sl()));
+  sl.registerSingleton<BiasReportRepository>(
+      BiasReportRepositoryImpl(sl(), sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -123,6 +138,8 @@ Future<void> initializeDependencies() async {
       SubmitCommunityVoteUseCase(sl()));
   sl.registerSingleton<GetArticleListFactChecksUseCase>(
       GetArticleListFactChecksUseCase(sl()));
+  sl.registerSingleton<GetBiasReportUseCase>(GetBiasReportUseCase(sl()));
+  sl.registerSingleton<RunPolarizeUseCase>(RunPolarizeUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
   sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl()));
@@ -136,4 +153,6 @@ Future<void> initializeDependencies() async {
       () => JournalistProfileBloc(sl(), sl(), sl()));
   sl.registerFactory<FactCheckBloc>(
       () => FactCheckBloc(sl(), sl(), sl(), sl()));
+  sl.registerFactory<BiasReportBloc>(
+      () => BiasReportBloc(sl(), sl(), sl()));
 }

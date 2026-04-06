@@ -10,6 +10,11 @@ import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
+import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_bloc.dart';
+import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_event.dart';
+import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_state.dart';
+import 'package:news_lab/features/bias_report/presentation/widgets/bias_badge.dart';
+import 'package:news_lab/features/bias_report/presentation/widgets/polarize_button.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
 import 'package:news_lab/features/fact_check/presentation/widgets/check_article_button.dart';
@@ -35,6 +40,15 @@ class ArticleDetailsView extends HookWidget {
             final bloc = sl<FactCheckBloc>();
             if (articleId.isNotEmpty) {
               bloc.add(LoadFactCheck(articleId: articleId, userId: userId));
+            }
+            return bloc;
+          },
+        ),
+        BlocProvider(
+          create: (_) {
+            final bloc = sl<BiasReportBloc>();
+            if (articleId.isNotEmpty) {
+              bloc.add(LoadBiasReport(articleId: articleId));
             }
             return bloc;
           },
@@ -129,6 +143,20 @@ class ArticleDetailsView extends HookWidget {
                   articleId: articleId,
                   userId: userId,
                   text: '${article!.title ?? ''}\n\n${article!.description ?? ''}\n\n${article!.content ?? ''}',
+                ),
+                const SizedBox(height: 4),
+                BlocBuilder<BiasReportBloc, BiasReportState>(
+                  builder: (context, state) {
+                    final report = switch (state) {
+                      BiasReportLoaded(:final report) => report,
+                      _ => null,
+                    };
+                    if (report != null) return BiasBadge(report: report);
+                    return PolarizeButton(
+                      articleId: articleId,
+                      text: '${article!.title ?? ''}\n\n${article!.description ?? ''}\n\n${article!.content ?? ''}',
+                    );
+                  },
                 ),
               ],
             ),
