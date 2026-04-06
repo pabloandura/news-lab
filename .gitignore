@@ -9,6 +9,9 @@ starter-project/
 logs_flutter.md
 log.md
 
+# Flutter env
+frontend/.env
+
 # NestJS services
 services/**/node_modules
 services/**/dist
