@@ -12,6 +12,7 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/local/loc
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
+import 'package:news_lab/features/fact_check/presentation/widgets/check_article_button.dart';
 import 'package:news_lab/features/fact_check/presentation/widgets/fact_check_badges.dart';
 import 'package:news_lab/injection_container.dart';
 
@@ -123,6 +124,12 @@ class ArticleDetailsView extends HookWidget {
                 ],
                 const SizedBox(height: 12),
                 FactCheckBadges(articleId: articleId, userId: userId),
+                const SizedBox(height: 8),
+                CheckArticleButton(
+                  articleId: articleId,
+                  userId: userId,
+                  text: '${article!.title ?? ''}\n\n${article!.description ?? ''}\n\n${article!.content ?? ''}',
+                ),
               ],
             ),
           ),
