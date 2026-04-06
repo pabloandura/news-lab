@@ -5,11 +5,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
 import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/features/fact_check/data/data_sources/bot_check_api_data_source.dart';
 import 'package:news_lab/features/fact_check/data/data_sources/fact_check_remote_data_source.dart';
 import 'package:news_lab/features/fact_check/data/repository/fact_check_repository_impl.dart';
 import 'package:news_lab/features/fact_check/domain/repository/fact_check_repository.dart';
 import 'package:news_lab/features/fact_check/domain/usecases/get_article_list_fact_checks_usecase.dart';
 import 'package:news_lab/features/fact_check/domain/usecases/get_fact_check_usecase.dart';
+import 'package:news_lab/features/fact_check/domain/usecases/run_bot_check_use_case.dart';
 import 'package:news_lab/features/fact_check/domain/usecases/submit_community_vote_usecase.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/article_category/data/data_sources/article_category_data_source.dart';
@@ -85,6 +87,8 @@ Future<void> initializeDependencies() async {
   // ── fact_check data sources ───────────────────────────────────────────────
   sl.registerSingleton<FactCheckRemoteDataSource>(
       FactCheckRemoteDataSourceImpl(sl()));
+  sl.registerSingleton<BotCheckApiDataSource>(
+      BotCheckApiDataSourceImpl(sl(), sl()));
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
@@ -97,7 +101,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<ArticleCategoryRepository>(
       ArticleCategoryRepositoryImpl(sl()));
   sl.registerSingleton<FactCheckRepository>(
-      FactCheckRepositoryImpl(sl()));
+      FactCheckRepositoryImpl(sl(), sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -114,6 +118,7 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<UpdateArticleUseCase>(UpdateArticleUseCase(sl()));
   sl.registerSingleton<GetCategoriesUseCase>(GetCategoriesUseCase(sl()));
   sl.registerSingleton<GetFactCheckUseCase>(GetFactCheckUseCase(sl()));
+  sl.registerSingleton<RunBotCheckUseCase>(RunBotCheckUseCase(sl()));
   sl.registerSingleton<SubmitCommunityVoteUseCase>(
       SubmitCommunityVoteUseCase(sl()));
   sl.registerSingleton<GetArticleListFactChecksUseCase>(
@@ -130,5 +135,5 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<JournalistProfileBloc>(
       () => JournalistProfileBloc(sl(), sl(), sl()));
   sl.registerFactory<FactCheckBloc>(
-      () => FactCheckBloc(sl(), sl()));
+      () => FactCheckBloc(sl(), sl(), sl(), sl()));
 }

@@ -55,3 +55,14 @@ class FactCheckVoteError extends FactCheckState {
   @override
   List<Object?> get props => [reverted, message];
 }
+
+/// Emitted after RunBotCheck is dispatched and the 202 is received.
+/// The UI shows a spinner; when the Firestore listener fires, transitions to [FactCheckLoaded].
+class FactCheckBotCheckProcessing extends FactCheckState {
+  final FactCheckEntity current;
+
+  const FactCheckBotCheckProcessing(this.current);
+
+  @override
+  List<Object?> get props => [current];
+}

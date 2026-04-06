@@ -11,6 +11,21 @@ class LoadFactCheck extends FactCheckEvent {
   const LoadFactCheck({required this.articleId, required this.userId});
 }
 
+/// Triggers the fact-checker microservice for this article.
+/// The BLoC fires an HTTP POST, then opens a Firestore listener;
+/// when the result arrives the listener emits [_BotCheckResultArrived].
+class RunBotCheck extends FactCheckEvent {
+  final String articleId;
+  final String userId;
+  final String text;
+
+  const RunBotCheck({
+    required this.articleId,
+    required this.userId,
+    required this.text,
+  });
+}
+
 class SubmitVote extends FactCheckEvent {
   final String articleId;
   final String userId;
@@ -22,3 +37,4 @@ class SubmitVote extends FactCheckEvent {
     required this.vote,
   });
 }
+

@@ -2,6 +2,11 @@ import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/fact_check/domain/entities/fact_check_entity.dart';
 
 abstract class FactCheckRepository {
+  Future<Result<void>> runBotCheck({
+    required String articleId,
+    required String text,
+  });
+
   Future<Result<FactCheckEntity>> getFactCheck({
     required String articleId,
     required String userId,
