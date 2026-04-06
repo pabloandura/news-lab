@@ -8,7 +8,9 @@ REGION     := "us-central1"
 # ── Dev ────────────────────────────────────────────────────────────────────
 
 dev-app:
-    cd frontend && flutter run
+    #!/usr/bin/env bash
+    set -a; [ -f frontend/.env ] && source frontend/.env; set +a
+    cd frontend && flutter run --dart-define=NEWS_API_KEY="$NEWS_API_KEY"
 
 dev service:
     cd services/{{service}} && npm run start:dev
@@ -27,11 +29,16 @@ dev-all:
         echo "⚠  Ollama is not running. Start it with: ollama serve"
         exit 1
     fi
+    adb reverse tcp:3001 tcp:3001
+    adb reverse tcp:3002 tcp:3002
+    adb reverse tcp:3003 tcp:3003
+    adb reverse tcp:11434 tcp:11434
     trap 'kill 0' SIGINT SIGTERM
     PORT=3001 npm --prefix services/polarizer    run start:dev 2>&1 | sed 's/^/[polarizer]    /' &
     PORT=3002 npm --prefix services/fact-checker run start:dev 2>&1 | sed 's/^/[fact-checker] /' &
     PORT=3003 npm --prefix services/sensemaker   run start:dev 2>&1 | sed 's/^/[sensemaker]   /' &
-    (cd frontend && flutter run) 2>&1 | sed 's/^/[flutter]      /' &
+    set -a; [ -f frontend/.env ] && source frontend/.env; set +a
+    (cd frontend && flutter run --dart-define=NEWS_API_KEY="$NEWS_API_KEY") 2>&1 | sed 's/^/[flutter]      /' &
     wait
 
 # Run a service on a fixed local port (polarizer=3001, fact-checker=3002)
