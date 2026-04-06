@@ -28,11 +28,19 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
 /coverage/
+flutter_export_environment.sh
+
+# Flutter-generated platform runner files (C++/CMake artifacts)
+**/flutter/generated_plugin_registrant.cc
+**/flutter/generated_plugin_registrant.h
+**/flutter/generated_plugins.cmake
+**/flutter/ephemeral/
 
 # Symbolication related
 app.*.symbols
