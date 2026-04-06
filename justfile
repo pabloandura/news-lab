@@ -17,6 +17,7 @@ dev service:
 adb-forward:
     adb reverse tcp:3001 tcp:3001
     adb reverse tcp:3002 tcp:3002
+    adb reverse tcp:3003 tcp:3003
     adb reverse tcp:11434 tcp:11434
 
 # Run a service on a fixed local port (polarizer=3001, fact-checker=3002)
@@ -25,6 +26,7 @@ dev-local service:
     case "{{service}}" in
       polarizer)    PORT=3001 ;;
       fact-checker) PORT=3002 ;;
+      sensemaker)   PORT=3003 ;;
       *)            PORT=3000 ;;
     esac
     cd services/{{service}} && PORT=$PORT npm run start:dev

@@ -54,6 +54,11 @@ import 'package:news_lab/features/publish_article/data/repository/publish_articl
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 import 'package:news_lab/features/publish_article/domain/usecases/upload_article.dart';
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_bloc.dart';
+import 'package:news_lab/features/similar_articles/data/data_sources/sensemaker_api_data_source.dart';
+import 'package:news_lab/features/similar_articles/data/repository/similar_articles_repository_impl.dart';
+import 'package:news_lab/features/similar_articles/domain/repository/similar_articles_repository.dart';
+import 'package:news_lab/features/similar_articles/domain/usecases/get_similar_articles_usecase.dart';
+import 'package:news_lab/features/similar_articles/presentation/bloc/similar_articles_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -103,6 +108,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<PolarizeApiDataSource>(
       PolarizeApiDataSourceImpl(sl(), sl()));
 
+  // ── similar_articles data sources ─────────────────────────────────────────
+  sl.registerSingleton<SensemakerApiDataSource>(
+      SensemakerApiDataSourceImpl(sl(), sl()));
+
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerSingleton<ArticleRepository>(
       ArticleRepositoryImpl(sl(), sl(), sl()));
@@ -117,6 +126,8 @@ Future<void> initializeDependencies() async {
       FactCheckRepositoryImpl(sl(), sl()));
   sl.registerSingleton<BiasReportRepository>(
       BiasReportRepositoryImpl(sl(), sl()));
+  sl.registerSingleton<SimilarArticlesRepository>(
+      SimilarArticlesRepositoryImpl(sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -140,6 +151,8 @@ Future<void> initializeDependencies() async {
       GetArticleListFactChecksUseCase(sl()));
   sl.registerSingleton<GetBiasReportUseCase>(GetBiasReportUseCase(sl()));
   sl.registerSingleton<RunPolarizeUseCase>(RunPolarizeUseCase(sl()));
+  sl.registerSingleton<GetSimilarArticlesUseCase>(
+      GetSimilarArticlesUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
   sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl()));
@@ -155,4 +168,6 @@ Future<void> initializeDependencies() async {
       () => FactCheckBloc(sl(), sl(), sl(), sl()));
   sl.registerFactory<BiasReportBloc>(
       () => BiasReportBloc(sl(), sl(), sl()));
+  sl.registerFactory<SimilarArticlesBloc>(
+      () => SimilarArticlesBloc(sl()));
 }

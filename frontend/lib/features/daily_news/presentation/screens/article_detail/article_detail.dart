@@ -11,7 +11,6 @@ import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_bloc.dart';
-import 'package:news_lab/features/daily_news/presentation/widgets/related_coverage_coming_soon.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_event.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_state.dart';
 import 'package:news_lab/features/bias_report/presentation/widgets/bias_badge.dart';
@@ -20,6 +19,8 @@ import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.d
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
 import 'package:news_lab/features/fact_check/presentation/widgets/check_article_button.dart';
 import 'package:news_lab/features/fact_check/presentation/widgets/fact_check_badges.dart';
+import 'package:news_lab/features/similar_articles/presentation/bloc/similar_articles_bloc.dart';
+import 'package:news_lab/features/similar_articles/presentation/widgets/similar_articles_section.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ArticleDetailsView extends HookWidget {
@@ -54,6 +55,7 @@ class ArticleDetailsView extends HookWidget {
             return bloc;
           },
         ),
+        BlocProvider(create: (_) => sl<SimilarArticlesBloc>()),
       ],
       child: BlocListener<BiasReportBloc, BiasReportState>(
         listener: (context, state) {
@@ -182,7 +184,7 @@ class ArticleDetailsView extends HookWidget {
                   },
                 ),
                 const SizedBox(height: 4),
-                const RelatedCoverageComingSoon(),
+                SimilarArticlesSection(articleId: articleId),
               ],
             ),
           ),

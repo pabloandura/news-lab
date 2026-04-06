@@ -13,6 +13,10 @@ const String factCheckerBaseUrl = String.fromEnvironment(
   'MICROSERVICES_BASE_URL',
   defaultValue: 'http://localhost:3002',
 );
+const String sensemakerBaseUrl = String.fromEnvironment(
+  'MICROSERVICES_BASE_URL',
+  defaultValue: 'http://localhost:3003',
+);
 const String newsAPIKey = String.fromEnvironment('NEWS_API_KEY');
 const String countryQuery = 'us';
 const String categoryQuery = 'general';
