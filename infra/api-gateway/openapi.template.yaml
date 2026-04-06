@@ -1,0 +1,233 @@
+# news-lab API Gateway — OpenAPI 2.0 spec
+#
+# This is a TEMPLATE. Deploy it via the setup script or `just gateway-update`,
+# which resolves the ${SERVICE_URL} placeholders using live Cloud Run URLs.
+#
+# Firebase JWT validation is enforced at the gateway for all user-facing paths.
+# The gateway then re-signs requests with its own service account before
+# forwarding to Cloud Run (jwt_audience), so Cloud Run stays private
+# (--no-allow-unauthenticated).
+
+swagger: '2.0'
+info:
+  title: news-lab API
+  description: API Gateway for news-lab microservices
+  version: '1.0.0'
+host: ${GATEWAY_HOST}
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+
+# ── Authentication ─────────────────────────────────────────────────────────
+#
+# Firebase JWTs are issued by securetoken.google.com for our project.
+# The gateway validates the token before any request reaches a service.
+
+securityDefinitions:
+  firebase:
+    authorizationUrl: ''
+    flow: implicit
+    type: oauth2
+    x-google-issuer: 'https://securetoken.google.com/${GCP_PROJECT_ID}'
+    x-google-jwks_uri: 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'
+    x-google-audiences: '${GCP_PROJECT_ID}'
+
+# Apply Firebase auth globally; individual paths override with security: [] where needed.
+security:
+  - firebase: []
+
+# ── Routes ─────────────────────────────────────────────────────────────────
+
+paths:
+
+  # fact-checker ─────────────────────────────────────────────────────────────
+
+  /fact-check:
+    post:
+      summary: Trigger automated fact-check analysis for an article
+      operationId: runFactCheck
+      x-google-backend:
+        address: ${FACT_CHECKER_URL}/fact-check
+        jwt_audience: ${FACT_CHECKER_URL}
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/FactCheckRequest'
+      responses:
+        '202':
+          description: Analysis started — result written to Firestore asynchronously
+          schema:
+            $ref: '#/definitions/AcceptedResponse'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Missing or invalid Firebase token
+
+  # polarizer ────────────────────────────────────────────────────────────────
+
+  /polarize:
+    post:
+      summary: Trigger bias analysis for an article
+      operationId: runPolarize
+      x-google-backend:
+        address: ${POLARIZER_URL}/polarize
+        jwt_audience: ${POLARIZER_URL}
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PolarizeRequest'
+      responses:
+        '202':
+          description: Analysis started — result written to Firestore asynchronously
+          schema:
+            $ref: '#/definitions/AcceptedResponse'
+        '400':
+          description: Invalid request body
+        '401':
+          description: Missing or invalid Firebase token
+
+  # sensemaker — user-facing ─────────────────────────────────────────────────
+
+  /similar:
+    post:
+      summary: Find semantically similar articles for a given article or text
+      operationId: getSimilarArticles
+      x-google-backend:
+        address: ${SENSEMAKER_URL}/similar
+        jwt_audience: ${SENSEMAKER_URL}
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/SimilarRequest'
+      responses:
+        '200':
+          description: Ranked list of similar articles
+          schema:
+            $ref: '#/definitions/SimilarResponse'
+        '401':
+          description: Missing or invalid Firebase token
+
+  # sensemaker — internal ingestion (Cloud Scheduler only) ──────────────────
+  #
+  # No Firebase auth on this path. Cloud Scheduler provides an OIDC token
+  # issued for the scheduler service account, which Cloud Run validates
+  # independently via its IAM policy.
+
+  /ingest:
+    post:
+      summary: Trigger daily news ingestion (internal — Cloud Scheduler only)
+      operationId: ingestNews
+      security: []
+      x-google-backend:
+        address: ${SENSEMAKER_URL}/ingest
+        jwt_audience: ${SENSEMAKER_URL}
+      parameters: []
+      responses:
+        '200':
+          description: Ingestion complete
+          schema:
+            $ref: '#/definitions/IngestResponse'
+
+  # health ───────────────────────────────────────────────────────────────────
+
+  /health:
+    get:
+      summary: Gateway health check (no auth — used by Cloud Run rollback)
+      operationId: health
+      security: []
+      x-google-backend:
+        address: ${FACT_CHECKER_URL}/health
+        jwt_audience: ${FACT_CHECKER_URL}
+      parameters: []
+      responses:
+        '200':
+          description: OK
+
+# ── Request / response schemas ─────────────────────────────────────────────
+
+definitions:
+
+  FactCheckRequest:
+    type: object
+    required: [articleId, text]
+    properties:
+      articleId:
+        type: string
+        description: Firestore document ID of the article
+      text:
+        type: string
+        minLength: 50
+        maxLength: 50000
+        description: Full article text to analyse
+
+  PolarizeRequest:
+    type: object
+    required: [articleId, text]
+    properties:
+      articleId:
+        type: string
+      text:
+        type: string
+
+  SimilarRequest:
+    type: object
+    properties:
+      articleId:
+        type: string
+        description: ID of an already-indexed article
+      text:
+        type: string
+        description: Raw text — used for user-authored articles not yet in the index
+
+  SimilarResponse:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/SimilarArticle'
+
+  SimilarArticle:
+    type: object
+    properties:
+      title:
+        type: string
+      source:
+        type: string
+      url:
+        type: string
+      publishedAt:
+        type: string
+      similarityScore:
+        type: number
+        format: float
+      snippet:
+        type: string
+
+  IngestResponse:
+    type: object
+    properties:
+      ingested:
+        type: integer
+      deduplicated:
+        type: integer
+      timestamp:
+        type: string
+
+  AcceptedResponse:
+    type: object
+    properties:
+      status:
+        type: string
+        enum: [processing]
+      articleId:
+        type: string

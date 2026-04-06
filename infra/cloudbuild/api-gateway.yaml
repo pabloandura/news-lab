@@ -1,0 +1,103 @@
+# Cloud Build trigger — API Gateway config deployment
+#
+# Fires when openapi.template.yaml changes on main.
+# Resolves live Cloud Run URLs, generates the final OpenAPI spec,
+# creates a new API config version, and updates the gateway.
+#
+# Trigger config (set in GCP Console or via gcloud):
+#   includedFiles: ['infra/api-gateway/**']
+#   branch: ^main$
+
+steps:
+
+  # Resolve Cloud Run service URLs from live deployments
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: resolve-urls
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        FACT_CHECKER_URL=$(gcloud run services describe fact-checker \
+          --region=us-central1 --format='value(status.url)')
+        POLARIZER_URL=$(gcloud run services describe polarizer \
+          --region=us-central1 --format='value(status.url)')
+        SENSEMAKER_URL=$(gcloud run services describe sensemaker \
+          --region=us-central1 --format='value(status.url)')
+        GATEWAY_HOST=$(gcloud api-gateway gateways describe news-lab-gateway \
+          --location=us-central1 --format='value(defaultHostname)' 2>/dev/null || echo "pending")
+
+        echo "FACT_CHECKER_URL=$$FACT_CHECKER_URL"
+        echo "POLARIZER_URL=$$POLARIZER_URL"
+        echo "SENSEMAKER_URL=$$SENSEMAKER_URL"
+        echo "GATEWAY_HOST=$$GATEWAY_HOST"
+
+        # Write to file so next step can source it
+        cat > /workspace/env.sh <<EOF
+        export FACT_CHECKER_URL=$$FACT_CHECKER_URL
+        export POLARIZER_URL=$$POLARIZER_URL
+        export SENSEMAKER_URL=$$SENSEMAKER_URL
+        export GATEWAY_HOST=$$GATEWAY_HOST
+        export GCP_PROJECT_ID=$PROJECT_ID
+        EOF
+
+  # Substitute placeholders and produce the final spec
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: generate-spec
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        source /workspace/env.sh
+        envsubst < infra/api-gateway/openapi.template.yaml > /workspace/openapi.yaml
+        echo "Generated spec:"
+        cat /workspace/openapi.yaml
+    waitFor: ['resolve-urls']
+
+  # Create a new versioned API config
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: create-api-config
+    args:
+      - gcloud
+      - api-gateway
+      - api-configs
+      - create
+      - news-lab-config-$COMMIT_SHA
+      - --api=news-lab-api
+      - --openapi-spec=/workspace/openapi.yaml
+      - --project=$PROJECT_ID
+      - --backend-auth-service-account=api-gateway-sa@$PROJECT_ID.iam.gserviceaccount.com
+    waitFor: ['generate-spec']
+
+  # Update the gateway to the new config
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: update-gateway
+    args:
+      - gcloud
+      - api-gateway
+      - gateways
+      - update
+      - news-lab-gateway
+      - --api=news-lab-api
+      - --api-config=news-lab-config-$COMMIT_SHA
+      - --location=us-central1
+      - --project=$PROJECT_ID
+    waitFor: ['create-api-config']
+
+  # Grant Cloud Run Invoker to the gateway SA on all services
+  # (idempotent — safe to run on every deploy)
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: grant-invoker
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        GW_SA="api-gateway-sa@$PROJECT_ID.iam.gserviceaccount.com"
+        for SERVICE in fact-checker polarizer sensemaker; do
+          gcloud run services add-iam-policy-binding $$SERVICE \
+            --region=us-central1 \
+            --member="serviceAccount:$$GW_SA" \
+            --role="roles/run.invoker" \
+            --project=$PROJECT_ID || true
+        done
+    waitFor: ['update-gateway']
