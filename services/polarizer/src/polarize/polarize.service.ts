@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { VertexService } from '../vertex/vertex.service.js';
+import { LlmService } from '../llm/llm.service.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { PolarizeRequestDto } from './dto/polarize-request.dto.js';
 import { BiasReport } from '@news-lab/types';
@@ -35,7 +35,7 @@ export class PolarizeService {
   private readonly ARTICLES_COLLECTION = 'articles';
 
   constructor(
-    private readonly vertex: VertexService,
+    private readonly llm: LlmService,
     private readonly firebase: FirebaseService,
   ) {}
 
@@ -80,8 +80,7 @@ export class PolarizeService {
     };
 
     try {
-      const result = await this.vertex.biasAnalyzer.generateContent(BIAS_PROMPT + text);
-      const raw = result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const raw = await this.llm.generate(BIAS_PROMPT + text);
       const parsed = JSON.parse(raw) as BiasAnalysis;
 
       return {

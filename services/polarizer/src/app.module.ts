@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from './config/configuration.js';
 import { FirebaseModule } from './firebase/firebase.module.js';
-import { VertexModule } from './vertex/vertex.module.js';
+import { LlmModule } from './llm/llm.module.js';
 import { PolarizeModule } from './polarize/polarize.module.js';
 
 @Module({
@@ -12,7 +12,7 @@ import { PolarizeModule } from './polarize/polarize.module.js';
       load: [configuration],
     }),
     FirebaseModule,
-    VertexModule,
+    LlmModule,
     PolarizeModule,
   ],
 })

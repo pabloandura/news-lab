@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { VertexService } from '../vertex/vertex.service.js';
+import { LlmService } from '../llm/llm.service.js';
 import { FirebaseService } from '../firebase/firebase.service.js';
 import { ClaimBusterService } from '../claimbuster/claimbuster.service.js';
 import { FactCheckRequestDto } from './dto/fact-check-request.dto.js';
@@ -53,7 +53,7 @@ export class FactCheckService {
   private readonly FACT_CHECKS_COLLECTION = 'fact_checks';
 
   constructor(
-    private readonly vertex: VertexService,
+    private readonly llm: LlmService,
     private readonly firebase: FirebaseService,
     private readonly claimBuster: ClaimBusterService,
   ) {}
@@ -128,10 +128,7 @@ export class FactCheckService {
   // ── Gemini: claim extraction ──────────────────────────────────────────────
 
   private async extractClaims(text: string): Promise<string[]> {
-    const result = await this.vertex.claimExtractor.generateContent(
-      EXTRACTION_PROMPT + text,
-    );
-    const raw = result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"claims":[]}';
+    const raw = await this.llm.generate(EXTRACTION_PROMPT + text);
 
     try {
       const parsed = JSON.parse(raw) as ClaimsList;
@@ -153,8 +150,7 @@ export class FactCheckService {
     const prompt = EVALUATION_PROMPT.replace('{CLAIM}', claim);
 
     try {
-      const result = await this.vertex.claimEvaluator.generateContent(prompt);
-      const raw = result.response.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const raw = await this.llm.generate(prompt);
       const parsed = JSON.parse(raw) as ClaimEvaluation;
 
       return {
