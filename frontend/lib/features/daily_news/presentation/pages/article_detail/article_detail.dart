@@ -55,10 +55,19 @@ class ArticleDetailsView extends HookWidget {
           },
         ),
       ],
-      child: Scaffold(
-        appBar: _buildAppBar(context),
-        body: _buildBody(context, articleId: articleId, userId: userId),
-        floatingActionButton: _buildFab(),
+      child: BlocListener<BiasReportBloc, BiasReportState>(
+        listener: (context, state) {
+          if (state is BiasReportError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: Scaffold(
+          appBar: _buildAppBar(context),
+          body: _buildBody(context, articleId: articleId, userId: userId),
+          floatingActionButton: _buildFab(),
+        ),
       ),
     );
   }
@@ -152,10 +161,23 @@ class ArticleDetailsView extends HookWidget {
                       BiasReportLoaded(:final report) => report,
                       _ => null,
                     };
-                    if (report != null) return BiasBadge(report: report);
+                    final articleText = '${article!.title ?? ''}\n\n${article!.description ?? ''}\n\n${article!.content ?? ''}';
+                    if (report != null) {
+                      return Row(
+                        children: [
+                          Expanded(child: BiasBadge(report: report)),
+                          GestureDetector(
+                            onTap: () => context.read<BiasReportBloc>().add(
+                                  RunPolarize(articleId: articleId, text: articleText),
+                                ),
+                            child: Icon(Ionicons.refresh_outline, size: 14, color: Colors.black38),
+                          ),
+                        ],
+                      );
+                    }
                     return PolarizeButton(
                       articleId: articleId,
-                      text: '${article!.title ?? ''}\n\n${article!.description ?? ''}\n\n${article!.content ?? ''}',
+                      text: articleText,
                     );
                   },
                 ),

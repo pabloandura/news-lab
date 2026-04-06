@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:news_lab/core/constants/constants.dart';
+import 'package:news_lab/core/constants/constants.dart' show factCheckerBaseUrl;
 
 abstract class BotCheckApiDataSource {
   /// Triggers the fact-checker Cloud Run service for [articleId].
@@ -25,7 +25,7 @@ class BotCheckApiDataSourceImpl implements BotCheckApiDataSource {
     final token = await _auth.currentUser?.getIdToken();
 
     await _dio.post(
-      '$microservicesBaseUrl/fact-check',
+      '$factCheckerBaseUrl/fact-check',
       data: {'articleId': articleId, 'text': text},
       options: Options(
         headers: {

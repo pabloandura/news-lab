@@ -1,11 +1,17 @@
 const String newsAPIBaseURL = 'https://newsapi.org/v2';
 
-// API Gateway URL — single entry point for all microservices.
-// Get the hostname after running: just gateway-url
-// Override at build time: --dart-define=MICROSERVICES_BASE_URL=http://localhost:3000
-const String microservicesBaseUrl = String.fromEnvironment(
+// Service URLs — in production, both are overridden to the API Gateway URL via:
+//   --dart-define=MICROSERVICES_BASE_URL=https://<gateway-host>
+// In local dev (no dart-define), each service runs on its own port:
+//   just dev polarizer   → http://localhost:3001
+//   just dev fact-checker → http://localhost:3002
+const String polarizerBaseUrl = String.fromEnvironment(
   'MICROSERVICES_BASE_URL',
-  defaultValue: 'https://news-lab-gateway-<hash>.uc.gateway.dev',
+  defaultValue: 'http://localhost:3001',
+);
+const String factCheckerBaseUrl = String.fromEnvironment(
+  'MICROSERVICES_BASE_URL',
+  defaultValue: 'http://localhost:3002',
 );
 const String newsAPIKey = String.fromEnvironment('NEWS_API_KEY');
 const String countryQuery = 'us';
