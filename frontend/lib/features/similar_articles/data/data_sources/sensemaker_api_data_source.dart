@@ -32,7 +32,7 @@ class SensemakerApiDataSourceImpl implements SensemakerApiDataSource {
 
     final List<dynamic> results = response.data['results'] as List<dynamic>;
     return results
-        .map((e) => SimilarArticleModel.fromJson(e as Map<String, dynamic>))
+        .map((e) => SimilarArticleModel.fromRawData(e as Map<String, dynamic>))
         .toList();
   }
 }

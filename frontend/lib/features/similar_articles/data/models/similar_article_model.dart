@@ -10,7 +10,7 @@ class SimilarArticleModel extends SimilarArticleEntity {
     required super.similarityScore,
   });
 
-  factory SimilarArticleModel.fromJson(Map<String, dynamic> json) {
+  factory SimilarArticleModel.fromRawData(Map<String, dynamic> json) {
     return SimilarArticleModel(
       title: json['title'] as String,
       source: json['source'] as String,

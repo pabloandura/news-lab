@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:news_lab/features/similar_articles/domain/entities/similar_article_entity.dart';
 
-abstract class SimilarArticlesState extends Equatable {
+sealed class SimilarArticlesState extends Equatable {
   const SimilarArticlesState();
 
   @override

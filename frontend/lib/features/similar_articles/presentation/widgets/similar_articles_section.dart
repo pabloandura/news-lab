@@ -73,7 +73,6 @@ class _SimilarArticlesSectionState extends State<SimilarArticlesSection> {
               ],
             ),
           SimilarArticlesError() => const SizedBox.shrink(),
-          _ => const SizedBox.shrink(),
         };
       },
     );
