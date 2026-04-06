@@ -94,10 +94,15 @@ paths:
           description: Missing or invalid Firebase token
 
   # sensemaker — user-facing ─────────────────────────────────────────────────
+  #
+  # STATUS: Coming Soon — sensemaker service not yet deployed.
+  # Routes are defined so the gateway spec is complete, but ${SENSEMAKER_URL}
+  # will not resolve until the service is live. Remove this comment and run
+  # `just gateway-update` when Phase 4 is implemented.
 
   /similar:
     post:
-      summary: Find semantically similar articles for a given article or text
+      summary: "[Coming Soon] Find semantically similar articles for a given article or text"
       operationId: getSimilarArticles
       x-google-backend:
         address: ${SENSEMAKER_URL}/similar
@@ -118,13 +123,14 @@ paths:
 
   # sensemaker — internal ingestion (Cloud Scheduler only) ──────────────────
   #
+  # STATUS: Coming Soon — see /similar comment above.
   # No Firebase auth on this path. Cloud Scheduler provides an OIDC token
   # issued for the scheduler service account, which Cloud Run validates
   # independently via its IAM policy.
 
   /ingest:
     post:
-      summary: Trigger daily news ingestion (internal — Cloud Scheduler only)
+      summary: "[Coming Soon] Trigger daily news ingestion (internal — Cloud Scheduler only)"
       operationId: ingestNews
       security: []
       x-google-backend:

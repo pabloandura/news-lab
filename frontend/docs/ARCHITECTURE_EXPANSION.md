@@ -593,7 +593,10 @@ Straightforward structured prompt → Firestore write. Reuses the Cloud Run + Ge
 
 **Deliverable:** User can tap "Check bias" on any article and see a bias breakdown.
 
-### Phase 4: sensemaker
+### Phase 4: sensemaker ⏳ Coming Soon
+
+> **Status: Deferred.** The service scaffold, Cloud Build pipeline, API Gateway routes, and shared TypeScript contracts are all in place. Implementation is blocked pending decisions on source licensing (see Open Questions §10.2) and rate-limiting policy (§10.4). The Flutter UI shows a placeholder.
+
 Most complex — requires multi-source ingestion, embedding pipeline, and vector search. Build last when the infrastructure and Flutter integration patterns are well-established.
 
 **Deliverable:** User can tap "Find related coverage" and see the same event from different sources and perspectives.

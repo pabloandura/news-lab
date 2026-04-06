@@ -11,6 +11,7 @@ import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_bloc.dart';
+import 'package:news_lab/features/daily_news/presentation/widgets/related_coverage_coming_soon.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_event.dart';
 import 'package:news_lab/features/bias_report/presentation/bloc/bias_report_state.dart';
 import 'package:news_lab/features/bias_report/presentation/widgets/bias_badge.dart';
@@ -158,6 +159,8 @@ class ArticleDetailsView extends HookWidget {
                     );
                   },
                 ),
+                const SizedBox(height: 4),
+                const RelatedCoverageComingSoon(),
               ],
             ),
           ),
