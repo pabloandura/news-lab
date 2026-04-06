@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:news_lab/features/daily_news/presentation/pages/home/daily_news.dart';
-import 'package:news_lab/features/explore/presentation/pages/explore_page.dart';
+import 'package:news_lab/features/daily_news/presentation/screens/home/daily_news.dart';
+import 'package:news_lab/features/explore/presentation/screens/explore_page.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});

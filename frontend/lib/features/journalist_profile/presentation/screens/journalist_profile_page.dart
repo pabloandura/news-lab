@@ -9,7 +9,7 @@ import 'package:news_lab/core/utils/date_formatter.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
-import 'package:news_lab/features/journalist_profile/presentation/pages/edit_article_page.dart';
+import 'package:news_lab/features/journalist_profile/presentation/screens/edit_article_page.dart';
 
 class JournalistProfilePage extends StatelessWidget {
   final JournalistProfileArgs args;

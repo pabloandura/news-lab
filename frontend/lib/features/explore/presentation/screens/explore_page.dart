@@ -5,7 +5,7 @@ import 'package:news_lab/features/article_category/presentation/cubit/article_ca
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
-import 'package:news_lab/features/daily_news/presentation/pages/home/daily_news.dart';
+import 'package:news_lab/features/daily_news/presentation/screens/home/daily_news.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ExplorePage extends StatelessWidget {
