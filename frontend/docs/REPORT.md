@@ -47,15 +47,20 @@ The clean architecture constraint — no Firebase imports in `domain/`, no busin
 
 ## 5. Proof of the Project
 
-*Screenshots and screen recordings to be added here.*
+### Home feed
+Merged News API + Firestore articles with category filter bar and badge chips (fact-check, bias, community vote).
 
-Screens to document:
-- Login page
-- Home feed (merged News API + Firestore articles, category filter bar)
-- Publish article form (title, description, content, thumbnail picker)
-- Article detail page (fact-check badges, bias badge, similar articles section)
-- Journalist profile page (article list, edit and delete actions)
-- Explore page (category grid)
+![Home feed](feed-screengrab.jpg)
+
+### Journalist profile page
+Article list with edit and delete actions.
+
+![Journalist profile](profile-screengrab.jpg)
+
+### Profile analytics
+Author stats and engagement overview.
+
+![Profile analytics](profile-analytics-screengrab.jpg)
 
 ---
 
