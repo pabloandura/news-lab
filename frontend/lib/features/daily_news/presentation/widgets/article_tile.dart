@@ -88,6 +88,16 @@ class ArticleWidget extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (article!.badgeBias != null ||
+                      article!.badgeFactCheck != null ||
+                      (factCheck?.communityCheck?.totalVotes ?? 0) > 0) ...[
+                    const SizedBox(height: 6),
+                    _TileBadges(
+                      badgeBias: article!.badgeBias,
+                      badgeFactCheck: article!.badgeFactCheck,
+                      communityCheck: factCheck?.communityCheck,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -188,6 +198,143 @@ class _JournalistChip extends StatelessWidget {
           color: Color(0xFFE8621A),
           letterSpacing: 0.4,
         ),
+      ),
+    );
+  }
+}
+
+// ── Tile badge row ────────────────────────────────────────────────────────────
+
+class _TileBadges extends StatelessWidget {
+  final String? badgeBias;
+  final String? badgeFactCheck;
+  final CommunityCheckEntity? communityCheck;
+
+  const _TileBadges({this.badgeBias, this.badgeFactCheck, this.communityCheck});
+
+  @override
+  Widget build(BuildContext context) {
+    final chips = <Widget>[];
+
+    if (badgeBias != null) {
+      chips.add(_SmallChip(
+        label: _biasLabel(badgeBias!),
+        color: _biasColor(badgeBias!),
+      ));
+    }
+    if (badgeFactCheck != null) {
+      chips.add(_SmallChip(
+        label: _factCheckLabel(badgeFactCheck!),
+        color: _factCheckColor(badgeFactCheck!),
+        icon: _factCheckIcon(badgeFactCheck!),
+      ));
+    }
+    final cc = communityCheck;
+    if (cc != null && cc.totalVotes > 0) {
+      final moreAccurate = cc.accurateVotes >= cc.inaccurateVotes;
+      chips.add(_SmallChip(
+        label:
+            '${moreAccurate ? cc.accurateVotes : cc.inaccurateVotes} ${moreAccurate ? 'accurate' : 'disputed'}',
+        color: moreAccurate ? const Color(0xFF22C55E) : Colors.orange.shade400,
+        icon: moreAccurate
+            ? Icons.thumb_up_alt_outlined
+            : Icons.thumb_down_alt_outlined,
+      ));
+    }
+
+    if (chips.isEmpty) return const SizedBox.shrink();
+    return Wrap(spacing: 4, runSpacing: 4, children: chips);
+  }
+
+  String _biasLabel(String bias) {
+    switch (bias) {
+      case 'left':
+        return 'Left';
+      case 'right':
+        return 'Right';
+      default:
+        return 'Center';
+    }
+  }
+
+  Color _biasColor(String bias) {
+    switch (bias) {
+      case 'left':
+        return Colors.blue.shade600;
+      case 'right':
+        return Colors.red.shade600;
+      default:
+        return Colors.green.shade600;
+    }
+  }
+
+  String _factCheckLabel(String status) {
+    switch (status) {
+      case 'verified':
+        return 'Verified';
+      case 'disputed':
+        return 'Disputed';
+      default:
+        return 'Unverified';
+    }
+  }
+
+  Color _factCheckColor(String status) {
+    switch (status) {
+      case 'verified':
+        return const Color(0xFF22C55E);
+      case 'disputed':
+        return Colors.orange.shade400;
+      default:
+        return Colors.grey.shade400;
+    }
+  }
+
+  IconData? _factCheckIcon(String status) {
+    switch (status) {
+      case 'verified':
+        return Icons.shield_outlined;
+      case 'disputed':
+        return Icons.warning_amber_outlined;
+      default:
+        return null;
+    }
+  }
+}
+
+class _SmallChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  const _SmallChip({required this.label, required this.color, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 10, color: color),
+            const SizedBox(width: 3),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }

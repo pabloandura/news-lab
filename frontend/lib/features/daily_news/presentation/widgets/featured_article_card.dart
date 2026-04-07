@@ -237,8 +237,7 @@ class _InfoSection extends StatelessWidget {
               ),
             ],
           ),
-          if (isJournalistArticle &&
-              (article.badgeBias != null || article.badgeFactCheck != null)) ...[
+          if (article.badgeBias != null || article.badgeFactCheck != null) ...[
             const SizedBox(height: 10),
             _AiBadgeRow(
               badgeBias: article.badgeBias,
