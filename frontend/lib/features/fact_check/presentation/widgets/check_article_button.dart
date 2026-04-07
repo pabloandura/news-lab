@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_state.dart';
@@ -49,39 +48,48 @@ class CheckArticleButton extends StatelessWidget {
                     ),
                   ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 13),
             decoration: BoxDecoration(
-              color: isDisabled ? Colors.grey.shade100 : Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isDisabled ? Colors.grey.shade300 : Colors.blue.shade300,
+                color: isDisabled
+                    ? Colors.grey.shade300
+                    : const Color(0xFFE8621A),
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (isProcessing)
                   SizedBox(
-                    width: 11,
-                    height: 11,
+                    width: 13,
+                    height: 13,
                     child: CircularProgressIndicator(
                       strokeWidth: 1.5,
-                      color: Colors.blue.shade600,
+                      color: const Color(0xFFE8621A),
                     ),
                   )
                 else
-                  Icon(
-                    Ionicons.shield_checkmark_outline,
-                    size: 13,
-                    color: isDisabled ? Colors.grey : Colors.blue.shade700,
+                  Text(
+                    '✦',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDisabled
+                          ? Colors.grey.shade400
+                          : const Color(0xFFE8621A),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 8),
                 Text(
-                  isProcessing ? 'Analysing…' : 'Check article',
+                  isProcessing ? 'Analysing…' : 'Run AI Fact-Check',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDisabled ? Colors.grey : Colors.blue.shade700,
+                    color: isDisabled
+                        ? Colors.grey.shade400
+                        : const Color(0xFFE8621A),
                   ),
                 ),
               ],

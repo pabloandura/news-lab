@@ -94,9 +94,14 @@ class FactCheckBloc extends Bloc<FactCheckEvent, FactCheckState> {
       FactCheckVoteError() => current.reverted,
       _ => null,
     };
-    if (currentEntity == null || currentEntity.communityCheck == null) return;
+    if (currentEntity == null) return;
 
-    final previous = currentEntity.communityCheck!;
+    final previous = currentEntity.communityCheck ??
+        const CommunityCheckEntity(
+          accurateVotes: 0,
+          inaccurateVotes: 0,
+          unsureVotes: 0,
+        );
     final optimistic = _applyOptimisticVote(previous, event.vote);
     emit(FactCheckVoteSubmitting(currentEntity.copyWith(communityCheck: optimistic)));
 

@@ -21,8 +21,9 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/local/loc
 import 'package:news_lab/features/daily_news/presentation/bloc/article/local/local_article_event.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_bloc.dart';
 import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_event.dart';
+import 'package:news_lab/features/fact_check/presentation/bloc/fact_check_state.dart';
+import 'package:news_lab/features/fact_check/domain/entities/fact_check_entity.dart';
 import 'package:news_lab/features/fact_check/presentation/widgets/check_article_button.dart';
-import 'package:news_lab/features/fact_check/presentation/widgets/fact_check_badges.dart';
 import 'package:news_lab/features/similar_articles/presentation/bloc/similar_articles_bloc.dart';
 import 'package:news_lab/features/similar_articles/presentation/widgets/similar_articles_section.dart';
 import 'package:news_lab/features/view_tracking/domain/use_cases/track_article_view_usecase.dart';
@@ -125,6 +126,9 @@ class ArticleDetailsView extends HookWidget {
     final hasImage = article?.imageUrl?.isNotEmpty == true;
 
     return SingleChildScrollView(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).padding.bottom + 24,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -154,6 +158,11 @@ class ArticleDetailsView extends HookWidget {
               '${article!.description ?? ''}\n\n${article!.content ?? ''}',
               style: const TextStyle(fontSize: 16, height: 1.6),
             ),
+          ),
+          const Divider(height: 1),
+          _CommunityVoteSection(
+            articleId: articleId,
+            userId: userId,
           ),
           const Divider(height: 1),
           _FactCheckPanel(
@@ -364,6 +373,149 @@ class _TextHeader extends StatelessWidget {
   }
 }
 
+// ── Community credibility vote ─────────────────────────────────────────────────
+
+class _CommunityVoteSection extends StatelessWidget {
+  final String articleId;
+  final String userId;
+
+  const _CommunityVoteSection({
+    required this.articleId,
+    required this.userId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FactCheckBloc, FactCheckState>(
+      builder: (context, state) {
+        final factCheck = switch (state) {
+          FactCheckLoaded() => state.factCheck,
+          FactCheckVoteSubmitting() => state.optimistic,
+          FactCheckVoteError() => state.reverted,
+          _ => null,
+        };
+        final userVote = factCheck?.communityCheck?.userVote;
+        final isSubmitting = state is FactCheckVoteSubmitting;
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'COMMUNITY CREDIBILITY VOTE',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black45,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _VoteButton(
+                      icon: Icons.thumb_up_outlined,
+                      label: 'Credible',
+                      isActive: userVote == CommunityVote.accurate,
+                      activeColor: const Color(0xFF22C55E),
+                      isLoading: isSubmitting,
+                      onTap: userId.isEmpty
+                          ? null
+                          : () => context.read<FactCheckBloc>().add(
+                                SubmitVote(
+                                  articleId: articleId,
+                                  userId: userId,
+                                  vote: CommunityVote.accurate,
+                                ),
+                              ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _VoteButton(
+                      icon: Icons.thumb_down_outlined,
+                      label: 'Disputed',
+                      isActive: userVote == CommunityVote.inaccurate,
+                      activeColor: Colors.red.shade400,
+                      isLoading: isSubmitting,
+                      onTap: userId.isEmpty
+                          ? null
+                          : () => context.read<FactCheckBloc>().add(
+                                SubmitVote(
+                                  articleId: articleId,
+                                  userId: userId,
+                                  vote: CommunityVote.inaccurate,
+                                ),
+                              ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VoteButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final Color activeColor;
+  final bool isLoading;
+  final VoidCallback? onTap;
+
+  const _VoteButton({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.activeColor,
+    required this.isLoading,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor =
+        isActive ? activeColor : Colors.black.withValues(alpha: 0.18);
+    final contentColor = isActive ? activeColor : Colors.black54;
+
+    return GestureDetector(
+      onTap: isLoading ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 48,
+        decoration: BoxDecoration(
+          color: isActive
+              ? activeColor.withValues(alpha: 0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: contentColor),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: contentColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Collapsible Fact-Check panel ──────────────────────────────────────────────
 
 class _FactCheckPanel extends StatelessWidget {
@@ -379,30 +531,147 @@ class _FactCheckPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      initiallyExpanded: true,
-      leading: const Icon(Icons.fact_check_outlined),
-      title: const Text(
-        'Fact Check',
-        style: TextStyle(fontWeight: FontWeight.w700),
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        leading: const Text(
+          '✦',
+          style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFFE8621A),
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        title: const Text(
+          'AI Fact-Check Panel',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FactCheckResultCard(articleId: articleId),
+                const SizedBox(height: 10),
+                CheckArticleButton(
+                  articleId: articleId,
+                  userId: userId,
+                  text: articleText,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+}
+
+/// Shows community credibility score in a green card when data is available.
+class _FactCheckResultCard extends StatelessWidget {
+  final String articleId;
+  const _FactCheckResultCard({required this.articleId});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FactCheckBloc, FactCheckState>(
+      builder: (context, state) {
+        final factCheck = switch (state) {
+          FactCheckLoaded() => state.factCheck,
+          FactCheckVoteSubmitting() => state.optimistic,
+          FactCheckVoteError() => state.reverted,
+          _ => null,
+        };
+
+        final community = factCheck?.communityCheck;
+        if (community == null || community.totalVotes == 0) {
+          return const SizedBox.shrink();
+        }
+
+        final pctAccurate = community.totalVotes > 0
+            ? (community.accurateVotes / community.totalVotes * 100).round()
+            : 0;
+        final isCredible = pctAccurate >= 50;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F2D1F),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
             children: [
-              FactCheckBadges(articleId: articleId, userId: userId),
-              const SizedBox(height: 10),
-              CheckArticleButton(
-                articleId: articleId,
-                userId: userId,
-                text: articleText,
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'FACT CHECK',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white54,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Community credibility score',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white60,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isCredible
+                            ? Icons.shield_outlined
+                            : Icons.warning_amber_outlined,
+                        size: 14,
+                        color: isCredible
+                            ? const Color(0xFF22C55E)
+                            : Colors.orange.shade400,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isCredible ? 'Credible' : 'Disputed',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isCredible
+                              ? const Color(0xFF22C55E)
+                              : Colors.orange.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '$pctAccurate%',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: isCredible
+                          ? const Color(0xFF22C55E)
+                          : Colors.orange.shade400,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -422,61 +691,63 @@ class _BiasPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      initiallyExpanded: false,
-      leading: const Icon(Icons.balance_outlined),
-      title: const Text(
-        'Bias Analysis',
-        style: TextStyle(fontWeight: FontWeight.w700),
-      ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: BlocBuilder<BiasReportBloc, BiasReportState>(
-            builder: (context, state) {
-              final report = switch (state) {
-                BiasReportLoaded(:final report) => report,
-                _ => null,
-              };
-              if (report != null) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    BiasSpectrumWidget(report: report),
-                    if (userId.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      GestureDetector(
-                        onTap: () => context.read<BiasReportBloc>().add(
-                              RunPolarize(
-                                  articleId: articleId, text: articleText),
-                            ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Ionicons.refresh_outline,
-                                size: 14, color: Colors.black38),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'Re-analyze',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.black38),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              }
-              return PolarizeButton(
-                articleId: articleId,
-                userId: userId,
-                text: articleText,
-              );
-            },
-          ),
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        title: const Text(
+          'Bias Analysis',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
-      ],
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: BlocBuilder<BiasReportBloc, BiasReportState>(
+              builder: (context, state) {
+                final report = switch (state) {
+                  BiasReportLoaded(:final report) => report,
+                  _ => null,
+                };
+                if (report != null) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      BiasSpectrumWidget(report: report),
+                      if (userId.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () => context.read<BiasReportBloc>().add(
+                                RunPolarize(
+                                    articleId: articleId, text: articleText),
+                              ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Ionicons.refresh_outline,
+                                  size: 14, color: Colors.black38),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Re-analyze',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.black38),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                }
+                return PolarizeButton(
+                  articleId: articleId,
+                  userId: userId,
+                  text: articleText,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -489,19 +760,30 @@ class _SimilarArticlesPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      initiallyExpanded: false,
-      leading: const Icon(Icons.layers_outlined),
-      title: const Text(
-        'Similar Articles',
-        style: TextStyle(fontWeight: FontWeight.w700),
-      ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-          child: SimilarArticlesSection(articleId: articleId),
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        leading: const Text(
+          '✦',
+          style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFFE8621A),
+            fontWeight: FontWeight.w900,
+          ),
         ),
-      ],
+        title: const Text(
+          'AI Similar Articles',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+            child: SimilarArticlesSection(articleId: articleId),
+          ),
+        ],
+      ),
     );
   }
 }
+
