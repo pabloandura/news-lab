@@ -192,7 +192,7 @@ export class FactCheckService {
     await this.firebase.db
       .collection('articles')
       .doc(articleId)
-      .update({ badgeFactCheck });
+      .set({ badgeFactCheck }, { merge: true });
 
     this.logger.log(`Wrote botCheck result to fact_checks/${articleId}, badge=${badgeFactCheck}`);
   }
