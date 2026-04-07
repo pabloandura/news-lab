@@ -290,7 +290,7 @@ class _VoteButton extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.12) : Colors.transparent,
+            color: isSelected ? color : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? color : Colors.black.withValues(alpha: 0.15),
@@ -300,21 +300,24 @@ class _VoteButton extends StatelessWidget {
           child: Column(
             children: [
               isLoading && isSelected
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: color),
+                          strokeWidth: 2, color: Colors.white),
                     )
-                  : Icon(icon, size: 18, color: isSelected ? color : Colors.black45),
+                  : Icon(icon,
+                      size: 18,
+                      color: isSelected ? Colors.white : Colors.black45),
               const SizedBox(height: 4),
               Text(
-                label,
+                isSelected ? 'You voted $label' : label,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight:
                       isSelected ? FontWeight.w700 : FontWeight.normal,
-                  color: isSelected ? color : Colors.black45,
+                  color: isSelected ? Colors.white : Colors.black45,
                 ),
               ),
             ],
