@@ -3,6 +3,7 @@ import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/features/journalist_profile/data/data_sources/journalist_profile_data_source.dart';
 import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/journalist_profile_params.dart';
 
 class JournalistProfileRepositoryImpl implements JournalistProfileRepository {
   final JournalistProfileDataSource _dataSource;

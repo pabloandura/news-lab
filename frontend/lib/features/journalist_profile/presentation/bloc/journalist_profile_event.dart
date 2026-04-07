@@ -1,4 +1,4 @@
-import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/journalist_profile_params.dart';
 
 abstract class JournalistProfileEvent {
   const JournalistProfileEvent();

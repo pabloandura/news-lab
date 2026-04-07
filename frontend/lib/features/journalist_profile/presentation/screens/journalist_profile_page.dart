@@ -13,7 +13,7 @@ import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_lab/features/bias_report/domain/entities/bias_report_entity.dart';
 import 'package:news_lab/features/bias_report/presentation/widgets/bias_spectrum_widget.dart';
-import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/journalist_profile_params.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';

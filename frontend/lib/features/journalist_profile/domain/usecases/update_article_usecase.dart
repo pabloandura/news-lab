@@ -1,6 +1,7 @@
 import 'package:news_lab/core/resources/result.dart';
 import 'package:news_lab/core/usecase/usecase.dart';
 import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/journalist_profile_params.dart';
 
 class UpdateArticleUseCase
     implements UseCase<Result<void>, UpdateArticleParams> {

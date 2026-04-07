@@ -8,7 +8,7 @@ import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/article_category/domain/entities/article_category_entity.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
-import 'package:news_lab/features/journalist_profile/domain/repository/journalist_profile_repository.dart';
+import 'package:news_lab/features/journalist_profile/domain/usecases/journalist_profile_params.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_state.dart';
