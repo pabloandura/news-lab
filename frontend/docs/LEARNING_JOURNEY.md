@@ -100,6 +100,20 @@ Both `ArticleWidget` (the standard list tile) and `FeaturedArticleCard` (the her
 
 **What was built:**
 
+*UI overhaul:*
+
+The generic starter UI that shipped with the initial implementation was replaced with a custom design more appropriate for a news product:
+- **App bar** — branded "NewsLab" wordmark with an orange (`#E8621A`) accent that carries through the entire theme (selected chips, active states, action buttons).
+- **Featured card** — the first article in the home feed is now a large hero card with a full-bleed thumbnail, gradient overlay, category label, and a reading-time estimate, replacing the plain list tile it shared with every other article.
+- **Article tile** — redesigned with a compact thumbnail on the right, bold title, source line, and date; the generic `ListTile` was removed entirely.
+- **Journalist profile page** — rebuilt to show an avatar, article count, a 7-day views sparkline chart, a bias-distribution spectrum bar, and a credibility score alongside the article list; the old flat stats grid was removed.
+- **Article detail page** — redesigned community vote section with three clearly labelled vote buttons, live vote counts, and a loading skeleton while the fact-check result loads; the bias report section was replaced with a visual spectrum slider widget.
+- **Empty states** — a shared `EmptyStateWidget` with a contextual icon and hint message was added across the home feed, saved articles, explore page, and journalist profile list, replacing the bare "no results" text.
+- **Animated list deletions** — article deletions on the journalist profile page now animate out with a slide + fade transition using `AnimatedList`.
+- **Breaking news ticker** — a scrolling horizontal ticker above the feed shows the latest headline.
+
+*Badge infrastructure on top of the UI overhaul:*
+
 - `_TileBadges` and `_SmallChip` widgets added to `article_tile.dart`, rendering the bias chip, fact-check chip (with icon), and community vote chip below the article date for any article that has at least one badge or community vote.
 - `static String _biasLabel(BiasReportEntity)` helper added to `RemoteArticlesBloc` to centralise the ±0.33 threshold logic so it matches the backend exactly.
 - `RefreshFactChecks` event dispatched via `.then()` on each `Navigator.pushNamed()` call that opens the article detail page, so the feed re-checks for new badge results as soon as the user returns.
