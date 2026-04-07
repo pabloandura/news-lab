@@ -102,7 +102,7 @@ Both `ArticleWidget` (the standard list tile) and `FeaturedArticleCard` (the her
 
 - `_TileBadges` and `_SmallChip` widgets added to `article_tile.dart`, rendering the bias chip, fact-check chip (with icon), and community vote chip below the article date for any article that has at least one badge or community vote.
 - `static String _biasLabel(BiasReportEntity)` helper added to `RemoteArticlesBloc` to centralise the ±0.33 threshold logic so it matches the backend exactly.
-- `RefreshFactChecks` event fired by `RemoteArticlesBloc` on navigation return (via `RouteObserver`) so the feed re-checks for new results when the user comes back from the article detail page.
+- `RefreshFactChecks` event dispatched via `.then()` on each `Navigator.pushNamed()` call that opens the article detail page, so the feed re-checks for new badge results as soon as the user returns.
 
 **What I learned at this checkpoint:**
 

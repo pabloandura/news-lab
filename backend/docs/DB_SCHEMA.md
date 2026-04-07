@@ -22,7 +22,7 @@ ArticleSchema = {
     politicalLean:          number,   // -1.0 (strongly left) … +1.0 (strongly right)
     emotionalLanguageScore: number,   // 0.0 (purely factual) … 1.0 (highly emotional)
     framingNotes:           string[], // specific framing techniques observed
-    analyzedAt:             string,   // ISO-8601 timestamp (set by the service, not server)
+    analyzedAt:             timestamp, // Firestore server timestamp (FieldValue.serverTimestamp())
   },
 
   // ── Written by the fact-checker service ───────────────────────────────────
