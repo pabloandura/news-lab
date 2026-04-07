@@ -80,4 +80,33 @@ Flutter features built to consume the microservices and deployed to production. 
 
 ---
 
-## Checkpoint 3 — *(to be filled)*
+## Checkpoint 3 — Bug Fixes, Badge UX, and Production Hardening
+
+**State of the project:** All AI badges (fact-check, bias, community votes) are now visible on the home feed for every article — not just on the article detail page — and the fact-checker pipeline runs reliably end-to-end in production.
+
+**What was fixed:**
+
+*Fact-checker pipeline not completing*
+
+The pipeline would start, call the LLM, and then silently crash before writing the result to Firestore. The root cause was subtle: the `fact-checker` service called `articles.update({ badgeFactCheck })`, but `Firestore.update()` throws `NOT_FOUND` when the document does not exist. External (News API) articles have no Firestore document, so every external article caused the service to crash at the last step. The fix was a one-line change: `set({ badgeFactCheck }, { merge: true })`. `set+merge` is a true upsert — it creates the document if absent and patches if present — which is the semantically correct operation here.
+
+*Badge latency in the home feed*
+
+After fixing the pipeline, badges were written to Firestore correctly but did not appear in the home feed until the user force-reloaded the app. The problem was architectural: `RemoteArticlesBloc` loads article entities once on startup via a single Firestore `.get()`, long before the fact-check and bias-report results arrive. Those results are fetched separately and stored in `RemoteArticlesDone.factChecks` and `.biasReports`, but the bloc was never patching the badge strings back onto the article entities before emitting state. The fix was to extend `_fetchAndEmitResults` so that after fetching results it derives `badgeFactCheck` (from `botCheck.flaggedSentencesPercent >= 0.3`) and `badgeBias` (from `biasReport.politicalLean` with ±0.33 thresholds) and copies them onto the article entities in the state — so the feed renders badges immediately when results arrive, with no reload required.
+
+*Badges hidden behind a journalist-only gate*
+
+Both `ArticleWidget` (the standard list tile) and `FeaturedArticleCard` (the hero card) had an `isJournalistArticle &&` guard that prevented any badge row from rendering for external News API articles. Since external articles are precisely the ones most likely to be fact-checked by the AI pipeline, this gate was removed from both widgets so all articles show badges when data is available.
+
+**What was built:**
+
+- `_TileBadges` and `_SmallChip` widgets added to `article_tile.dart`, rendering the bias chip, fact-check chip (with icon), and community vote chip below the article date for any article that has at least one badge or community vote.
+- `static String _biasLabel(BiasReportEntity)` helper added to `RemoteArticlesBloc` to centralise the ±0.33 threshold logic so it matches the backend exactly.
+- `RefreshFactChecks` event fired by `RemoteArticlesBloc` on navigation return (via `RouteObserver`) so the feed re-checks for new results when the user comes back from the article detail page.
+
+**What I learned at this checkpoint:**
+
+- **Firestore `update` vs `set+merge`:** `update` is a strict patch on an existing document; `set+merge` is a safe upsert. For services that may run before the client has created the document, `set+merge` is almost always the right choice.
+- **Two-system badge problem:** When two separate data fetches need to be reconciled into one UI state (article entities vs. fact-check results), the reconciliation must happen explicitly in the BLoC before emitting state — waiting for the user to reload is not acceptable UX.
+- **Denormalized badge fields as a trade-off:** Writing `badgeFactCheck` and `badgeBias` directly onto `articles` documents means the home feed can display badges in a single Firestore read. The trade-off is that if the badge logic ever changes, a migration script is needed to backfill the stored values. For a read-heavy feed this is the right trade-off.
+- **Widget gate audits:** Feature flags and conditional rendering guards (`isJournalistArticle &&`) need regular review to ensure they reflect current requirements. It is easy to add a guard during initial development that becomes a silent blocker as the feature expands.

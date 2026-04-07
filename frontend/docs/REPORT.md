@@ -27,6 +27,8 @@ I wrote an `ACCEPTANCE_CRITERIA.md` at the repo root to sequence work and avoid 
 
 **Designing for extension from day one.** Keeping the data layer split into separate `ArticleFirestoreDataSource` and `ArticleStorageDataSource` — and later adding parallel service-backed data sources for fact-check and bias without touching the domain layer — validated the clean architecture constraint. The friction of the strict import boundaries paid off each time a new data source was wired in without touching existing code.
 
+**Denormalized badge fields as a feed performance trade-off.** Storing `badgeFactCheck` and `badgeBias` directly on each `articles` document (written by the backend services) means the home feed can display all badges in a single Firestore read, with no join to `fact_checks`. The downside is that if the badge classification logic ever changes the stored values need backfilling. For a read-heavy, append-mostly feed this is the right trade-off: reads are vastly more frequent than classification rule updates.
+
 ---
 
 ## 4. Reflection and Future Directions
@@ -73,13 +75,15 @@ A full-screen category grid lets users browse articles by category. Categories a
 #### AI-powered fact-checking (`fact_check` feature + `fact-checker` service)
 Each article detail page shows a fact-check panel with two components:
 
-- **Bot check:** a NestJS microservice (`services/fact-checker`) that calls a locally running [Ollama](https://ollama.com/) LLM to rate the article's factual reliability and return a structured verdict. The result is cached in Firestore under `factChecks/{articleId}/botCheck` so the LLM is only called once per article.
-- **Community check:** readers can cast a `credible` / `not credible` vote. Votes are stored in Firestore (`factChecks/{articleId}/votes`) and aggregated into a community credibility score displayed as a badge.
+- **Bot check:** a NestJS microservice (`services/fact-checker`) that calls a locally running [Ollama](https://ollama.com/) LLM to rate the article's factual reliability and return a structured verdict. The result is cached in Firestore under `fact_checks/{articleId}` so the LLM is only called once per article.
+- **Community check:** readers can cast an `accurate` / `inaccurate` / `unsure` vote. Votes are stored in Firestore (`fact_checks/{articleId}/votes/{userId}`) and aggregated into `fact_checks/{articleId}.communityCheck` counters, displayed as a badge on both the article detail page and the home feed tile.
+
+Home feed badges for every article: once the fact-checker pipeline writes its result, `RemoteArticlesBloc` derives the `badgeFactCheck` badge from `botCheck.flaggedSentencesPercent` (≥ 0.3 → "disputed", otherwise "verified") and patches it onto the article entity so the badge appears on the tile immediately — no reload required. The `_TileBadges` widget in `article_tile.dart` renders the fact-check chip, bias chip, and community vote chip for all articles on the home feed, regardless of whether the article came from Firestore or the News API.
 
 The `fact_check` feature is fully layered: domain entities and use cases are Firebase/HTTP agnostic; the data layer has two separate data sources — `FactCheckRemoteDataSource` (Firestore) and `BotCheckApiDataSource` (HTTP).
 
 #### Bias detection (`bias_report` feature + `polarizer` service)
-A `polarizer` NestJS microservice accepts an article and returns a bias report (left/center/right lean with a confidence score) by calling Ollama. The article detail page shows a bias badge. Like the fact-check result, the bias report is cached in Firestore once generated to avoid redundant LLM calls.
+A `polarizer` NestJS microservice accepts an article and returns a bias report (left/center/right lean with a confidence score) by calling Ollama. The bias report is embedded directly inside the `articles/{articleId}` document (`biasReport` sub-map) so that a single Firestore read retrieves both article and analysis. `badgeBias` is also written to the same document as a denormalized string (`"left"` / `"center"` / `"right"`) so the home feed can render the badge without a second read. The article detail page shows the bias badge, and the polarizer also increments the `stats/bias_landscape` singleton document to power a global bias distribution dashboard.
 
 #### Similar articles (`similar_articles` feature + `sensemaker` service)
 A `sensemaker` NestJS microservice finds thematically related articles using Ollama embeddings. The article detail page shows a "Similar Articles" section with links to related stories. The feature is fully layered with its own domain entity, repository, and BLoC.

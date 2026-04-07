@@ -15,6 +15,18 @@ ArticleSchema = {
   thumbnailUrl: string,     // download URL pointing to media/articles/<uuid> in Cloud Storage
   category:     string,     // optional tag (e.g. "technology", "politics")
   publishedAt:  timestamp,  // Firestore server timestamp set on creation
+
+  // ── Written by the polarizer service ──────────────────────────────────────
+  badgeBias:   string | null,  // "left" | "center" | "right" — set once polarizer runs
+  biasReport: {                // embedded sub-map; absent until polarizer runs
+    politicalLean:          number,   // -1.0 (strongly left) … +1.0 (strongly right)
+    emotionalLanguageScore: number,   // 0.0 (purely factual) … 1.0 (highly emotional)
+    framingNotes:           string[], // specific framing techniques observed
+    analyzedAt:             string,   // ISO-8601 timestamp (set by the service, not server)
+  },
+
+  // ── Written by the fact-checker service ───────────────────────────────────
+  badgeFactCheck: string | null,  // "verified" | "disputed" — set once fact-checker runs
 }
 ```
 
@@ -26,6 +38,11 @@ ArticleSchema = {
 - `publishedAt` uses `FieldValue.serverTimestamp()` to guarantee UTC consistency
   regardless of the client's device clock.
 - `category` is optional; an empty string `""` is stored when not provided.
+- `badgeBias` / `badgeFactCheck` are denormalized badge fields written by the backend
+  services so the home feed can display badges without joining to `fact_checks`.
+  They are absent on documents that have not yet been processed.
+- `biasReport` is written inline (not as a subcollection) to keep article reads
+  atomic — one Firestore get retrieves both article text and its bias analysis.
 
 ### Cloud Storage path
 Thumbnail images live at:
@@ -52,3 +69,75 @@ ArticleCategorySchema = {
 - Using the slug as the document ID makes lookups by slug O(1) without a query.
 - `order` keeps the category chips and explore grid stable across fetches regardless of insertion order.
 - The `category` field on `articles` documents stores the slug so it can be compared directly against a category document ID.
+
+---
+
+## Collection: `fact_checks`
+
+Each document holds the machine-generated fact-check result and the aggregated community vote counts for one article.
+The document ID equals the corresponding `articles` document ID.
+
+```
+FactCheckSchema = {
+  botCheck: {
+    flaggedSentencesPercent: number,  // 0.0–1.0; ≥ 0.3 triggers "disputed" badge
+    confidenceScore:         number,  // 0.0–1.0; LLM self-reported confidence
+    checkedAt:               timestamp,
+  },
+  communityCheck: {
+    accurateVotes:   number,  // vote count for "accurate"
+    inaccurateVotes: number,  // vote count for "inaccurate"
+    unsureVotes:     number,  // vote count for "unsure"
+  },
+}
+```
+
+### Design Notes
+- The document is created by the `fact-checker` NestJS service using `set+merge`;
+  it is safe to call even if the article document does not yet exist in `articles`.
+- `botCheck.flaggedSentencesPercent >= 0.3` is the threshold that sets `articles/{id}.badgeFactCheck = "disputed"`.
+  Below that threshold the badge is `"verified"`.
+- `communityCheck` counters are incremented (and the previous vote decremented) inside
+  a Firestore transaction in `FactCheckRemoteDataSource.submitVote` to prevent race conditions.
+
+### Subcollection: `fact_checks/{articleId}/votes`
+
+Each document records one user's vote. The document ID is the voter's Firebase Auth UID.
+
+```
+VoteSchema = {
+  vote:    string,     // "accurateVotes" | "inaccurateVotes" | "unsureVotes"
+  votedAt: timestamp,  // Firestore server timestamp
+}
+```
+
+### Design Notes
+- Using the UID as the document ID enforces one-vote-per-user at the storage layer —
+  a second vote simply overwrites the first (and the transaction adjusts the counters).
+- `vote` stores the **counter field name** it increments in `communityCheck`; this makes
+  the transaction logic generic (`communityCheck.${vote}: FieldValue.increment(1)`).
+
+---
+
+## Collection: `stats`
+
+A small collection of singleton documents holding aggregated counters across the entire dataset.
+
+### Document: `stats/bias_landscape`
+
+Written by the `polarizer` service each time an article is analysed. Holds global bias distribution counters.
+
+```
+BiasLandscapeSchema = {
+  leftCount:   number,  // articles with politicalLean < -0.33
+  centerCount: number,  // articles with politicalLean in [-0.33, +0.33]
+  rightCount:  number,  // articles with politicalLean > +0.33
+  totalCount:  number,  // leftCount + centerCount + rightCount
+}
+```
+
+### Design Notes
+- All four fields are incremented atomically via `FieldValue.increment(1)` inside the
+  polarizer service so there is no read-modify-write race under concurrent analysis.
+- `totalCount` is redundant (it equals the sum of the three lean counts) but is kept
+  to avoid a client-side addition on every dashboard render.
