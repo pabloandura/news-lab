@@ -73,6 +73,17 @@ export class SimilarService {
         const data = articleSnap.data() as { title?: string; description?: string; content?: string };
         return `${data.title ?? ''} ${data.description ?? ''} ${data.content ?? ''}`.trim();
       }
+
+      // Fall back to sensemaker_articles (NewsAPI articles use md5(url) as doc ID)
+      const sensemakerSnap = await this.firebase.db
+        .collection(COLLECTION)
+        .doc(dto.articleId)
+        .get();
+
+      if (sensemakerSnap.exists) {
+        const data = sensemakerSnap.data() as { title?: string; snippet?: string };
+        return `${data.title ?? ''} ${data.snippet ?? ''}`.trim();
+      }
     }
 
     throw new BadRequestException('Provide either articleId (of a known article) or text');

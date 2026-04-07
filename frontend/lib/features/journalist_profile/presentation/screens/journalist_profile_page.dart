@@ -113,6 +113,18 @@ class _MyArticlesTabState extends State<_MyArticlesTab> {
   bool _initialized = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final articles = _articlesFrom(context.read<JournalistProfileBloc>().state);
+      if (articles != null) {
+        _items = articles.toList();
+        _initialized = true;
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<JournalistProfileBloc, JournalistProfileState>(
       listener: (context, state) {
