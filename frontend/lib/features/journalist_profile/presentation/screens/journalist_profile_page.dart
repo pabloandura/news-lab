@@ -65,6 +65,12 @@ class JournalistProfilePage extends StatelessWidget {
             ],
           ),
           body: BlocListener<JournalistProfileBloc, JournalistProfileState>(
+            listenWhen: (previous, current) =>
+                current is ArticleActionError ||
+                (previous is JournalistProfileLoaded &&
+                    previous.pendingDeleteId != null &&
+                    current is JournalistProfileLoaded &&
+                    current.pendingDeleteId == null),
             listener: (context, state) {
               if (state is ArticleActionError) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -73,6 +79,10 @@ class JournalistProfilePage extends StatelessWidget {
                     content: Text(state.message),
                   ),
                 );
+              } else {
+                context
+                    .read<ProfileStatsBloc>()
+                    .add(LoadProfileStats(args.authorId));
               }
             },
             child: Column(
@@ -514,14 +524,6 @@ class _AnalyticsContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Stats grid
-          _StatsGrid(
-            articleCount: stats.articleCount,
-            totalViews: stats.totalViews,
-            totalUpvotes: stats.totalUpvotes,
-          ),
-          const SizedBox(height: 24),
-
           // Credibility score
           _SectionCard(
             title: 'Community Credibility',
@@ -595,70 +597,6 @@ class _AnalyticsContent extends StatelessWidget {
     if (score >= 70) return Colors.green.shade700;
     if (score >= 40) return Colors.orange.shade700;
     return Colors.red.shade700;
-  }
-}
-
-// Stats grid: Articles / Views / Upvotes
-
-class _StatsGrid extends StatelessWidget {
-  final int articleCount;
-  final int totalViews;
-  final int totalUpvotes;
-
-  const _StatsGrid({
-    required this.articleCount,
-    required this.totalViews,
-    required this.totalUpvotes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: _StatCell(label: 'Articles', value: '$articleCount')),
-        const SizedBox(width: 8),
-        Expanded(
-            child: _StatCell(label: 'Views', value: _compact(totalViews))),
-        const SizedBox(width: 8),
-        Expanded(
-            child: _StatCell(
-                label: 'Upvotes', value: _compact(totalUpvotes))),
-      ],
-    );
-  }
-
-  String _compact(int n) {
-    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}K';
-    return '$n';
-  }
-}
-
-class _StatCell extends StatelessWidget {
-  final String label;
-  final String value;
-  const _StatCell({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 2),
-          Text(label,
-              style: const TextStyle(fontSize: 12, color: Colors.black54)),
-        ],
-      ),
-    );
   }
 }
 
