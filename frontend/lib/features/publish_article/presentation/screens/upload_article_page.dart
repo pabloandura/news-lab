@@ -15,7 +15,8 @@ import 'package:news_lab/features/publish_article/presentation/bloc/upload_artic
 import 'package:news_lab/features/publish_article/presentation/bloc/upload_article_state.dart';
 
 class UploadArticlePage extends StatefulWidget {
-  const UploadArticlePage({super.key});
+  final bool isTab;
+  const UploadArticlePage({super.key, this.isTab = false});
 
   @override
   State<UploadArticlePage> createState() => _UploadArticlePageState();
@@ -43,10 +44,13 @@ class _UploadArticlePageState extends State<UploadArticlePage> {
       appBar: AppBar(
         title: const Text('Publish Article',
             style: TextStyle(color: Colors.black)),
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.close, color: Colors.black),
-        ),
+        automaticallyImplyLeading: !widget.isTab,
+        leading: widget.isTab
+            ? null
+            : GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.close, color: Colors.black),
+              ),
       ),
       body: BlocConsumer<UploadArticleBloc, UploadArticleState>(
         listener: (context, state) {

@@ -12,6 +12,8 @@ class ArticleEntity extends Equatable {
   final String? url;
   final String? category;
   final DateTime? publishedAt;
+  final String? badgeBias;
+  final String? badgeFactCheck;
 
   const ArticleEntity({
     this.id,
@@ -25,6 +27,8 @@ class ArticleEntity extends Equatable {
     this.url,
     this.category,
     this.publishedAt,
+    this.badgeBias,
+    this.badgeFactCheck,
   });
 
   ArticleEntity copyWith({
@@ -39,6 +43,8 @@ class ArticleEntity extends Equatable {
     String? url,
     String? category,
     DateTime? publishedAt,
+    String? badgeBias,
+    String? badgeFactCheck,
   }) {
     return ArticleEntity(
       id: id ?? this.id,
@@ -52,6 +58,8 @@ class ArticleEntity extends Equatable {
       url: url ?? this.url,
       category: category ?? this.category,
       publishedAt: publishedAt ?? this.publishedAt,
+      badgeBias: badgeBias ?? this.badgeBias,
+      badgeFactCheck: badgeFactCheck ?? this.badgeFactCheck,
     );
   }
 
@@ -68,5 +76,7 @@ class ArticleEntity extends Equatable {
         url,
         category,
         publishedAt,
+        badgeBias,
+        badgeFactCheck,
       ];
 }

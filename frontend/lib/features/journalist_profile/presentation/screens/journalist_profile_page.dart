@@ -15,18 +15,22 @@ import 'package:news_lab/features/journalist_profile/presentation/screens/edit_a
 
 class JournalistProfilePage extends StatelessWidget {
   final JournalistProfileArgs args;
+  final bool isTab;
 
-  const JournalistProfilePage({super.key, required this.args});
+  const JournalistProfilePage({super.key, required this.args, this.isTab = false});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile', style: TextStyle(color: Colors.black)),
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
+        automaticallyImplyLeading: !isTab,
+        leading: isTab
+            ? null
+            : GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.arrow_back, color: Colors.black),
+              ),
       ),
       body: BlocConsumer<JournalistProfileBloc, JournalistProfileState>(
         listener: (context, state) {

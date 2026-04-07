@@ -41,6 +41,11 @@ class ArticlesRemoteDataSourceImpl implements ArticlesRemoteDataSource {
   static ArticleEntity _docToEntity(
       QueryDocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
+    final badgeBias = data['badgeBias'] as String?;
+    final badgeFactCheck = data['badgeFactCheck'] as String?;
+    if (badgeBias == null && data.containsKey('badgeBias')) {
+      // field exists but is null — expected for unanalyzed articles
+    }
     return ArticleEntity(
       remoteId: doc.id,
       author: data['author'] as String?,
@@ -55,6 +60,8 @@ class ArticlesRemoteDataSourceImpl implements ArticlesRemoteDataSource {
           ? data['category'] as String
           : null,
       publishedAt: (data['publishedAt'] as Timestamp?)?.toDate(),
+      badgeBias: (badgeBias?.isNotEmpty == true) ? badgeBias : null,
+      badgeFactCheck: (badgeFactCheck?.isNotEmpty == true) ? badgeFactCheck : null,
     );
   }
 }

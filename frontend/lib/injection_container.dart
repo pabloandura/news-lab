@@ -5,6 +5,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:news_lab/core/data/data_sources/articles_remote_data_source.dart';
 import 'package:news_lab/core/data/data_sources/articles_storage_data_source.dart';
+import 'package:news_lab/core/data/data_sources/view_tracking_remote_data_source.dart';
+import 'package:news_lab/features/analytics/data/data_sources/analytics_remote_data_source.dart';
+import 'package:news_lab/features/analytics/data/repository/analytics_repository_impl.dart';
+import 'package:news_lab/features/analytics/domain/repository/analytics_repository.dart';
+import 'package:news_lab/features/analytics/domain/use_cases/get_author_stats_usecase.dart';
+import 'package:news_lab/features/analytics/domain/use_cases/get_bias_landscape_usecase.dart';
+import 'package:news_lab/features/analytics/domain/use_cases/get_trending_articles_usecase.dart';
+import 'package:news_lab/features/analytics/domain/use_cases/get_weekly_views_usecase.dart';
+import 'package:news_lab/features/view_tracking/data/repository/view_tracking_repository_impl.dart';
+import 'package:news_lab/features/view_tracking/domain/repository/view_tracking_repository.dart';
+import 'package:news_lab/features/view_tracking/domain/use_cases/track_article_view_usecase.dart';
 import 'package:news_lab/features/bias_report/data/data_sources/bias_report_remote_data_source.dart';
 import 'package:news_lab/features/bias_report/data/data_sources/polarize_api_data_source.dart';
 import 'package:news_lab/features/bias_report/data/repository/bias_report_repository_impl.dart';
@@ -84,6 +95,12 @@ Future<void> initializeDependencies() async {
       ArticlesRemoteDataSourceImpl(sl()));
   sl.registerSingleton<ArticlesStorageDataSource>(
       ArticlesStorageDataSourceImpl(sl()));
+  sl.registerSingleton<ViewTrackingRemoteDataSource>(
+      ViewTrackingRemoteDataSourceImpl(sl()));
+
+  // ── analytics data sources ────────────────────────────────────────────────
+  sl.registerSingleton<AnalyticsRemoteDataSource>(
+      AnalyticsRemoteDataSourceImpl(sl()));
 
   // ── daily_news data sources ───────────────────────────────────────────────
   sl.registerSingleton<NewsApiService>(NewsApiService(sl()));
@@ -131,6 +148,10 @@ Future<void> initializeDependencies() async {
       BiasReportRepositoryImpl(sl(), sl()));
   sl.registerSingleton<SimilarArticlesRepository>(
       SimilarArticlesRepositoryImpl(sl()));
+  sl.registerSingleton<ViewTrackingRepository>(
+      ViewTrackingRepositoryImpl(sl()));
+  sl.registerSingleton<AnalyticsRepository>(
+      AnalyticsRepositoryImpl(sl()));
 
   // ── Use cases ─────────────────────────────────────────────────────────────
   sl.registerSingleton<GetArticleUseCase>(GetArticleUseCase(sl()));
@@ -160,6 +181,14 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<WatchBiasReportUseCase>(WatchBiasReportUseCase(sl()));
   sl.registerSingleton<GetSimilarArticlesUseCase>(
       GetSimilarArticlesUseCase(sl()));
+  sl.registerSingleton<TrackArticleViewUseCase>(
+      TrackArticleViewUseCase(sl()));
+  sl.registerSingleton<GetTrendingArticlesUseCase>(
+      GetTrendingArticlesUseCase(sl()));
+  sl.registerSingleton<GetBiasLandscapeUseCase>(
+      GetBiasLandscapeUseCase(sl()));
+  sl.registerSingleton<GetAuthorStatsUseCase>(GetAuthorStatsUseCase(sl()));
+  sl.registerSingleton<GetWeeklyViewsUseCase>(GetWeeklyViewsUseCase(sl()));
 
   // ── BLoCs (factories — new instance per route) ────────────────────────────
   sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl(), sl()));

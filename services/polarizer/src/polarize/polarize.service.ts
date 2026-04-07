@@ -117,7 +117,29 @@ export class PolarizeService {
         { merge: true },
       );
 
-    this.logger.log(`Wrote biasReport to articles/${articleId}`);
+    const lean = report.politicalLean;
+    const badgeBias = lean < -0.33 ? 'left' : lean > 0.33 ? 'right' : 'center';
+
+    await this.firebase.db
+      .collection(this.ARTICLES_COLLECTION)
+      .doc(articleId)
+      .update({ badgeBias });
+
+    const leanField =
+      lean < -0.33 ? 'leftCount' : lean > 0.33 ? 'rightCount' : 'centerCount';
+
+    await this.firebase.db
+      .collection('stats')
+      .doc('bias_landscape')
+      .set(
+        {
+          [leanField]: FieldValue.increment(1),
+          totalCount: FieldValue.increment(1),
+        },
+        { merge: true },
+      );
+
+    this.logger.log(`Wrote biasReport to articles/${articleId}, badge=${badgeBias}, landscape+=${leanField}`);
   }
 
   private clamp(value: number, min: number, max: number): number {

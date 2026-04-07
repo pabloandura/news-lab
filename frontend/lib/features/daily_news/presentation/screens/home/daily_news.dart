@@ -3,13 +3,10 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_lab/config/routes/route_args.dart';
 import 'package:news_lab/config/routes/routes.dart';
 import 'package:news_lab/features/article_category/domain/entities/article_category_entity.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_cubit.dart';
 import 'package:news_lab/features/article_category/presentation/cubit/article_category_state.dart';
-import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:news_lab/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_bloc.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
@@ -36,46 +33,6 @@ class DailyNews extends StatelessWidget {
         title: const Text('Daily News', style: TextStyle(color: Colors.black)),
         actions: [
           GestureDetector(
-            onTap: () {
-              final authState = context.read<AuthBloc>().state;
-              if (authState is AuthAuthenticated) {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.journalistProfile,
-                  arguments: JournalistProfileArgs(
-                    authorId: authState.user.uid,
-                    displayName:
-                        authState.user.displayName ?? authState.user.email,
-                    email: authState.user.email,
-                    isOwner: true,
-                  ),
-                );
-              } else {
-                Navigator.pushNamed(context, AppRoutes.login);
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: BlocBuilder<AuthBloc, AuthState>(
-                builder: (context, authState) {
-                  if (authState is AuthAuthenticated) {
-                    final name = authState.user.displayName ?? authState.user.email;
-                    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
-                    return CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Colors.black,
-                      child: Text(
-                        initial,
-                        style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    );
-                  }
-                  return const Icon(Icons.person_outline, color: Colors.black);
-                },
-              ),
-            ),
-          ),
-          GestureDetector(
             onTap: () => Navigator.pushNamed(context, AppRoutes.savedArticles),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 14),
@@ -89,18 +46,6 @@ class DailyNews extends StatelessWidget {
         ),
       ),
       body: const ArticleListBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final authState = context.read<AuthBloc>().state;
-          if (authState is AuthAuthenticated) {
-            Navigator.pushNamed(context, AppRoutes.uploadArticle);
-          } else {
-            Navigator.pushNamed(context, AppRoutes.login);
-          }
-        },
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 }

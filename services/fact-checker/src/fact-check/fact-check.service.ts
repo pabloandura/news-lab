@@ -186,6 +186,14 @@ export class FactCheckService {
         { merge: true },
       );
 
-    this.logger.log(`Wrote botCheck result to fact_checks/${articleId}`);
+    const badgeFactCheck =
+      result.flaggedSentencesPercent >= 0.3 ? 'disputed' : 'verified';
+
+    await this.firebase.db
+      .collection('articles')
+      .doc(articleId)
+      .update({ badgeFactCheck });
+
+    this.logger.log(`Wrote botCheck result to fact_checks/${articleId}, badge=${badgeFactCheck}`);
   }
 }

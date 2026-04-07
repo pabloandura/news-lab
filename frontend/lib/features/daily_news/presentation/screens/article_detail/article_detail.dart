@@ -23,6 +23,7 @@ import 'package:news_lab/features/fact_check/presentation/widgets/check_article_
 import 'package:news_lab/features/fact_check/presentation/widgets/fact_check_badges.dart';
 import 'package:news_lab/features/similar_articles/presentation/bloc/similar_articles_bloc.dart';
 import 'package:news_lab/features/similar_articles/presentation/widgets/similar_articles_section.dart';
+import 'package:news_lab/features/view_tracking/domain/use_cases/track_article_view_usecase.dart';
 import 'package:news_lab/injection_container.dart';
 
 class ArticleDetailsView extends HookWidget {
@@ -39,6 +40,21 @@ class ArticleDetailsView extends HookWidget {
         : article?.url != null
             ? md5.convert(utf8.encode(article!.url!)).toString()
             : '';
+
+    // Track view for journalist-published articles (those with a remoteId)
+    useEffect(() {
+      final isJournalistArticle =
+          article?.remoteId?.isNotEmpty == true && article?.authorId != null;
+      if (isJournalistArticle) {
+        sl<TrackArticleViewUseCase>().call(
+          TrackArticleViewParams(
+            articleId: article!.remoteId!,
+            authorId: article!.authorId!,
+          ),
+        );
+      }
+      return null;
+    }, []);
 
     return MultiBlocProvider(
       providers: [
