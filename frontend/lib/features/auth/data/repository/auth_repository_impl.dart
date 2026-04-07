@@ -13,6 +13,15 @@ class AuthRepositoryImpl implements AuthRepository {
       _dataSource.signIn(email: email, password: password);
 
   @override
+  Future<UserEntity> signUp(
+          {required String email, required String password}) =>
+      _dataSource.signUp(email: email, password: password);
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) =>
+      _dataSource.sendPasswordResetEmail(email: email);
+
+  @override
   Future<void> signOut() => _dataSource.signOut();
 
   @override

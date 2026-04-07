@@ -45,6 +45,8 @@ import 'package:news_lab/features/auth/data/repository/auth_repository_impl.dart
 import 'package:news_lab/features/auth/domain/repository/auth_repository.dart';
 import 'package:news_lab/features/auth/domain/usecases/sign_in.dart';
 import 'package:news_lab/features/auth/domain/usecases/sign_out.dart';
+import 'package:news_lab/features/auth/domain/usecases/sign_up.dart';
+import 'package:news_lab/features/auth/domain/usecases/forgot_password.dart';
 import 'package:news_lab/features/auth/domain/usecases/watch_auth_state.dart';
 import 'package:news_lab/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_lab/features/daily_news/data/data_sources/local/app_database.dart';
@@ -159,6 +161,8 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<SaveArticleUseCase>(SaveArticleUseCase(sl()));
   sl.registerSingleton<RemoveArticleUseCase>(RemoveArticleUseCase(sl()));
   sl.registerSingleton<SignInUseCase>(SignInUseCase(sl()));
+  sl.registerSingleton<SignUpUseCase>(SignUpUseCase(sl()));
+  sl.registerSingleton<ForgotPasswordUseCase>(ForgotPasswordUseCase(sl()));
   sl.registerSingleton<SignOutUseCase>(SignOutUseCase(sl()));
   sl.registerSingleton<WatchAuthStateUseCase>(WatchAuthStateUseCase(sl()));
   sl.registerSingleton<UploadArticleUseCase>(UploadArticleUseCase(sl()));
@@ -194,7 +198,7 @@ Future<void> initializeDependencies() async {
   sl.registerFactory<RemoteArticlesBloc>(() => RemoteArticlesBloc(sl(), sl(), sl()));
   sl.registerFactory<LocalArticleBloc>(
       () => LocalArticleBloc(sl(), sl(), sl()));
-  sl.registerFactory<AuthBloc>(() => AuthBloc(sl(), sl(), sl()));
+  sl.registerFactory<AuthBloc>(() => AuthBloc(sl(), sl(), sl(), sl(), sl()));
   sl.registerFactory<UploadArticleBloc>(() => UploadArticleBloc(sl()));
   sl.registerFactory<ArticleCategoryCubit>(
       () => ArticleCategoryCubit(sl()));
