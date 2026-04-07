@@ -13,6 +13,8 @@ import 'package:news_lab/features/analytics/domain/use_cases/get_author_stats_us
 import 'package:news_lab/features/analytics/domain/use_cases/get_bias_landscape_usecase.dart';
 import 'package:news_lab/features/analytics/domain/use_cases/get_trending_articles_usecase.dart';
 import 'package:news_lab/features/analytics/domain/use_cases/get_weekly_views_usecase.dart';
+import 'package:news_lab/features/explore/presentation/bloc/trending_articles_bloc.dart';
+import 'package:news_lab/features/explore/presentation/cubit/bias_landscape_cubit.dart';
 import 'package:news_lab/features/view_tracking/data/repository/view_tracking_repository_impl.dart';
 import 'package:news_lab/features/view_tracking/domain/repository/view_tracking_repository.dart';
 import 'package:news_lab/features/view_tracking/domain/use_cases/track_article_view_usecase.dart';
@@ -210,4 +212,8 @@ Future<void> initializeDependencies() async {
       () => BiasReportBloc(sl(), sl(), sl()));       // GetBiasReportUseCase, RunPolarizeUseCase, WatchBiasReportUseCase
   sl.registerFactory<SimilarArticlesBloc>(
       () => SimilarArticlesBloc(sl()));
+  sl.registerFactory<TrendingArticlesBloc>(
+      () => TrendingArticlesBloc(sl()));
+  sl.registerFactory<BiasLandscapeCubit>(
+      () => BiasLandscapeCubit(sl()));
 }

@@ -6,13 +6,15 @@ import 'package:news_lab/injection_container.dart';
 
 /// Wraps UploadArticlePage with its required BlocProvider for the Publish tab.
 class PublishTabPage extends StatelessWidget {
-  const PublishTabPage({super.key});
+  final VoidCallback? onPublishSuccess;
+
+  const PublishTabPage({super.key, this.onPublishSuccess});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<UploadArticleBloc>(),
-      child: const UploadArticlePage(isTab: true),
+      child: UploadArticlePage(isTab: true, onPublishSuccess: onPublishSuccess),
     );
   }
 }

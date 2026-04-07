@@ -48,7 +48,7 @@ class _AppShellState extends State<AppShell> {
         children: [
           const DailyNews(),
           _hasVisited[1] ? const ExplorePage() : const SizedBox.shrink(),
-          _hasVisited[2] ? const PublishTabPage() : const SizedBox.shrink(),
+          _hasVisited[2] ? PublishTabPage(onPublishSuccess: () => _onTabTapped(0)) : const SizedBox.shrink(),
           _hasVisited[3] ? const ProfileTabPage() : const SizedBox.shrink(),
         ],
       ),
