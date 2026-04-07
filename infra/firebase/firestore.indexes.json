@@ -20,13 +20,6 @@
       "collectionGroup": "article_views",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "viewCount", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "article_views",
-      "queryScope": "COLLECTION",
-      "fields": [
         { "fieldPath": "authorId", "order": "ASCENDING" },
         { "fieldPath": "viewCount", "order": "DESCENDING" }
       ]
