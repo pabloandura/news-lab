@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:news_lab/config/routes/routes.dart';
+import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/features/similar_articles/domain/entities/similar_article_entity.dart';
 
 class SimilarArticleTile extends StatelessWidget {
@@ -11,8 +13,18 @@ class SimilarArticleTile extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () {
-        // Articles ingested by sensemaker are external — open URL if desired.
-        // For now, tapping is a no-op; URL opening can be wired later.
+        final entity = ArticleEntity(
+          title: article.title,
+          author: article.source,
+          description: article.snippet,
+          content: article.snippet,
+          url: article.url,
+          publishedAt: article.publishedAt != null
+              ? DateTime.tryParse(article.publishedAt!)
+              : null,
+        );
+        Navigator.pushNamed(context, AppRoutes.articleDetails,
+            arguments: entity);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
