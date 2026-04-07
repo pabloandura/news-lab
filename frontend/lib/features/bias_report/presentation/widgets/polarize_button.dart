@@ -42,41 +42,45 @@ class PolarizeButton extends StatelessWidget {
                     RunPolarize(articleId: articleId, text: text),
                   ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 13),
             decoration: BoxDecoration(
-              color: isDisabled ? Colors.grey.shade100 : Colors.purple.shade50,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isDisabled
                     ? Colors.grey.shade300
-                    : Colors.purple.shade300,
+                    : Colors.grey.shade600,
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (isProcessing)
                   SizedBox(
-                    width: 11,
-                    height: 11,
+                    width: 13,
+                    height: 13,
                     child: CircularProgressIndicator(
                       strokeWidth: 1.5,
-                      color: Colors.purple.shade600,
+                      color: Colors.grey.shade600,
                     ),
                   )
                 else
                   Icon(
                     Ionicons.stats_chart_outline,
-                    size: 13,
-                    color: isDisabled ? Colors.grey : Colors.purple.shade700,
+                    size: 15,
+                    color: isDisabled
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade600,
                   ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 8),
                 Text(
-                  isProcessing ? 'Analysing…' : 'Analyse bias',
+                  isProcessing ? 'Analysing…' : 'Run Bias Analysis',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDisabled ? Colors.grey : Colors.purple.shade700,
+                    color: isDisabled
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade700,
                   ),
                 ),
               ],
