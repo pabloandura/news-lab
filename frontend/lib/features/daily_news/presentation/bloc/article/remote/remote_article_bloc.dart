@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_lab/core/domain/entities/article_entity.dart';
 import 'package:news_lab/core/resources/result.dart';
+import 'package:news_lab/features/bias_report/domain/entities/bias_report_entity.dart';
 import 'package:news_lab/features/bias_report/domain/usecases/get_article_list_bias_reports_usecase.dart';
 import 'package:news_lab/features/daily_news/domain/usecases/get_article.dart';
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_event.dart';
@@ -69,15 +70,51 @@ class RemoteArticlesBloc
     final biasResult = await _getListBiasReports(ids);
 
     if (isClosed) return;
-    emit(current.withResults(
-      factChecks: switch (factCheckResult) {
-        Success(:final data) => data,
-        Failure() => current.factChecks,
-      },
-      biasReports: switch (biasResult) {
-        Success(:final data) => data,
-        Failure() => current.biasReports,
-      },
+
+    final newFactChecks = switch (factCheckResult) {
+      Success(:final data) => data,
+      Failure() => current.factChecks,
+    };
+
+    final newBiasReports = switch (biasResult) {
+      Success(:final data) => data,
+      Failure() => current.biasReports,
+    };
+
+    // Patch articles with derived badges so the list shows them immediately
+    // without waiting for a full article reload.
+    final patchedArticles = current.articles!.map((a) {
+      final id = _articleId(a);
+      String? badgeFactCheck = a.badgeFactCheck;
+      String? badgeBias = a.badgeBias;
+
+      final botCheck = newFactChecks[id]?.botCheck;
+      if (botCheck != null) {
+        badgeFactCheck =
+            botCheck.flaggedSentencesPercent >= 0.3 ? 'disputed' : 'verified';
+      }
+
+      final biasReport = newBiasReports[id];
+      if (biasReport != null) {
+        badgeBias = _biasLabel(biasReport);
+      }
+
+      if (badgeFactCheck == a.badgeFactCheck && badgeBias == a.badgeBias) {
+        return a;
+      }
+      return a.copyWith(badgeFactCheck: badgeFactCheck, badgeBias: badgeBias);
+    }).toList();
+
+    emit(RemoteArticlesDone(
+      patchedArticles,
+      factChecks: newFactChecks,
+      biasReports: newBiasReports,
     ));
+  }
+
+  static String _biasLabel(BiasReportEntity report) {
+    if (report.politicalLean < -0.33) return 'left';
+    if (report.politicalLean > 0.33) return 'right';
+    return 'center';
   }
 }
