@@ -96,23 +96,55 @@ class AnalyticsRemoteDataSourceImpl implements AnalyticsRemoteDataSource {
       (acc, doc) => acc + ((doc.data()['viewCount'] as num?)?.toInt() ?? 0),
     );
 
-    // Fetch article IDs for fact_check vote aggregation
-    // TODO: denormalize authorId onto fact_checks for O(1) aggregation when author article counts grow large
     final articleIds = viewsQuery.docs.map((d) => d.id).toList();
     int totalUpvotes = 0;
+    int totalVotes = 0;
+    double? averagePoliticalLean;
+
     if (articleIds.isNotEmpty) {
-      final factCheckFutures = articleIds.map(
-        (id) => _firestore.collection(factChecksCollection).doc(id).get(),
-      );
-      final factCheckDocs = await Future.wait(factCheckFutures);
+      // Fetch fact checks and article docs in parallel
+      final factCheckFutures = articleIds
+          .map((id) => _firestore.collection(factChecksCollection).doc(id).get());
+      final articleDocFutures = articleIds
+          .map((id) => _firestore.collection(articlesCollection).doc(id).get());
+
+      final results = await Future.wait([
+        Future.wait(factCheckFutures),
+        Future.wait(articleDocFutures),
+      ]);
+
+      final factCheckDocs = results[0];
+      final articleDocs = results[1];
+
       for (final doc in factCheckDocs) {
         if (!doc.exists) continue;
-        final data = doc.data()!;
+        final data = (doc as dynamic).data() as Map<String, dynamic>?;
+        if (data == null) continue;
         final community = data['communityCheck'] as Map<String, dynamic>?;
         if (community != null) {
-          totalUpvotes +=
-              (community['accurateVotes'] as num?)?.toInt() ?? 0;
+          final accurate = (community['accurateVotes'] as num?)?.toInt() ?? 0;
+          final inaccurate =
+              (community['inaccurateVotes'] as num?)?.toInt() ?? 0;
+          final unsure = (community['unsureVotes'] as num?)?.toInt() ?? 0;
+          totalUpvotes += accurate;
+          totalVotes += accurate + inaccurate + unsure;
         }
+      }
+
+      final leans = <double>[];
+      for (final doc in articleDocs) {
+        if (!doc.exists) continue;
+        final data = (doc as dynamic).data() as Map<String, dynamic>?;
+        if (data == null) continue;
+        final biasReport = data['biasReport'] as Map<String, dynamic>?;
+        if (biasReport != null) {
+          final lean = (biasReport['politicalLean'] as num?)?.toDouble();
+          if (lean != null) leans.add(lean);
+        }
+      }
+      if (leans.isNotEmpty) {
+        averagePoliticalLean =
+            leans.reduce((a, b) => a + b) / leans.length;
       }
     }
 
@@ -120,6 +152,8 @@ class AnalyticsRemoteDataSourceImpl implements AnalyticsRemoteDataSource {
       articleCount: articleCount,
       totalViews: totalViews,
       totalUpvotes: totalUpvotes,
+      totalVotes: totalVotes,
+      averagePoliticalLean: averagePoliticalLean,
     );
   }
 

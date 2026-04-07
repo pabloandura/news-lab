@@ -68,6 +68,7 @@ import 'package:news_lab/features/journalist_profile/domain/usecases/delete_arti
 import 'package:news_lab/features/journalist_profile/domain/usecases/get_journalist_articles_usecase.dart';
 import 'package:news_lab/features/journalist_profile/domain/usecases/update_article_usecase.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/journalist_profile_bloc.dart';
+import 'package:news_lab/features/journalist_profile/presentation/bloc/profile_stats_bloc.dart';
 import 'package:news_lab/features/publish_article/data/repository/publish_article_repository_impl.dart';
 import 'package:news_lab/features/publish_article/domain/repository/publish_article_repository.dart';
 import 'package:news_lab/features/publish_article/domain/usecases/upload_article.dart';
@@ -216,4 +217,6 @@ Future<void> initializeDependencies() async {
       () => TrendingArticlesBloc(sl()));
   sl.registerFactory<BiasLandscapeCubit>(
       () => BiasLandscapeCubit(sl()));
+  sl.registerFactory<ProfileStatsBloc>(
+      () => ProfileStatsBloc(sl(), sl()));
 }
