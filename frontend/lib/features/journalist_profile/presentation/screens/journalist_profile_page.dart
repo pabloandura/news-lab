@@ -63,15 +63,6 @@ class JournalistProfilePage extends StatelessWidget {
                   },
                 ),
             ],
-            bottom: const TabBar(
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.black45,
-              indicatorColor: Colors.black,
-              tabs: [
-                Tab(text: 'My Articles'),
-                Tab(text: 'Analytics'),
-              ],
-            ),
           ),
           body: BlocListener<JournalistProfileBloc, JournalistProfileState>(
             listener: (context, state) {
@@ -84,14 +75,220 @@ class JournalistProfilePage extends StatelessWidget {
                 );
               }
             },
-            child: TabBarView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MyArticlesTab(args: args),
-                _AnalyticsTab(args: args),
+                _ProfileHeader(args: args),
+                BlocBuilder<ProfileStatsBloc, ProfileStatsState>(
+                  builder: (context, state) {
+                    if (state is ProfileStatsLoaded) {
+                      return _ProfileStatsRow(state: state);
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                const SizedBox(height: 12),
+                const TabBar(
+                  labelColor: Color(0xFFE8621A),
+                  unselectedLabelColor: Colors.black45,
+                  indicatorColor: Color(0xFFE8621A),
+                  tabs: [
+                    Tab(text: 'My Articles'),
+                    Tab(text: 'Analytics'),
+                  ],
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _MyArticlesTab(args: args),
+                      _AnalyticsTab(args: args),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Profile header card ────────────────────────────────────────────────────────
+
+class _ProfileHeader extends StatelessWidget {
+  final JournalistProfileArgs args;
+  const _ProfileHeader({required this.args});
+
+  @override
+  Widget build(BuildContext context) {
+    final letter =
+        args.displayName.isNotEmpty ? args.displayName[0].toUpperCase() : '?';
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              letter,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  args.displayName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (args.email != null)
+                  Text(
+                    args.email!,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.black45,
+                    ),
+                  ),
+                const SizedBox(height: 6),
+                if (args.isOwner)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE8621A)),
+                    ),
+                    child: const Text(
+                      'JOURNALIST',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE8621A),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Profile stats row ─────────────────────────────────────────────────────────
+
+class _ProfileStatsRow extends StatelessWidget {
+  final ProfileStatsLoaded state;
+  const _ProfileStatsRow({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final stats = state.stats;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _StatCard(
+              icon: Icons.article_outlined,
+              value: '${stats.articleCount}',
+              label: 'ARTICLES',
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.remove_red_eye_outlined,
+              value: _compact(stats.totalViews),
+              label: 'TOTAL VIEWS',
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.thumb_up_outlined,
+              value: '${stats.totalUpvotes}',
+              label: 'UPVOTES',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _compact(int n) {
+    if (n >= 1000000) return '${(n / 1000000).toStringAsFixed(1)}M';
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
+    return '$n';
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFFE8621A)),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Colors.black45,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -626,102 +823,161 @@ class _ArticleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPending = isPendingDelete || isPendingUpdate;
+    const thumbSize = 72.0;
+
     return Opacity(
       opacity: isPending ? 0.45 : 1.0,
       child: GestureDetector(
         onTap: isPending ? null : onTap,
         behavior: HitTestBehavior.opaque,
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          height: MediaQuery.of(context).size.width / 2.4,
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Thumbnail(url: article.imageUrl),
-              const SizedBox(width: 12),
-              Expanded(child: _ArticleInfo(article: article)),
-              if (isOwner)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Chips row
+                        Wrap(
+                          spacing: 6,
+                          children: [
+                            if (article.category != null)
+                              _ArticleChip(
+                                label: article.category!.toUpperCase(),
+                                color: Colors.black54,
+                                borderColor:
+                                    Colors.black.withValues(alpha: 0.18),
+                              ),
+                            if (article.badgeBias != null)
+                              _ArticleChip(
+                                label: _biasLabel(article.badgeBias!),
+                                color: _biasColor(article.badgeBias!),
+                                borderColor:
+                                    _biasColor(article.badgeBias!).withValues(alpha: 0.4),
+                                dot: true,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          article.title ?? '',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: Colors.black87,
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'You · ${formatDate(article.publishedAt)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: article.imageUrl ?? '',
+                      width: thumbSize,
+                      height: thumbSize,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        width: thumbSize,
+                        height: thumbSize,
+                        color: Colors.black12,
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: thumbSize,
+                        height: thumbSize,
+                        color: Colors.black12,
+                        child: const Icon(Icons.broken_image_outlined,
+                            size: 18, color: Colors.black26),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (isOwner) ...[
+                const SizedBox(height: 8),
+                const Divider(height: 1),
                 _OwnerActions(
                   isPending: isPending,
                   onEdit: onEdit,
                   onDelete: onDelete,
                 ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class _Thumbnail extends StatelessWidget {
-  final String? url;
-  const _Thumbnail({required this.url});
+  String _biasLabel(String bias) {
+    switch (bias) {
+      case 'left':
+        return '● Left';
+      case 'right':
+        return '● Right';
+      default:
+        return '● Center';
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: CachedNetworkImage(
-        imageUrl: url ?? '',
-        width: MediaQuery.of(context).size.width / 3.2,
-        height: double.maxFinite,
-        fit: BoxFit.cover,
-        placeholder: (_, __) => Container(
-          color: Colors.black12,
-          child: const CupertinoActivityIndicator(),
-        ),
-        errorWidget: (_, __, ___) => Container(
-          color: Colors.black12,
-          child: const Icon(Icons.broken_image_outlined),
-        ),
-      ),
-    );
+  Color _biasColor(String bias) {
+    switch (bias) {
+      case 'left':
+        return Colors.blue.shade600;
+      case 'right':
+        return Colors.red.shade600;
+      default:
+        return Colors.green.shade600;
+    }
   }
 }
 
-class _ArticleInfo extends StatelessWidget {
-  final ArticleEntity article;
-  const _ArticleInfo({required this.article});
+class _ArticleChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color borderColor;
+  final bool dot;
+
+  const _ArticleChip({
+    required this.label,
+    required this.color,
+    required this.borderColor,
+    this.dot = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            article.title ?? '',
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 15,
-                color: Colors.black87),
-          ),
-          const SizedBox(height: 4),
-          Expanded(
-            child: Text(
-              article.description ?? '',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-          ),
-          if (article.publishedAt != null)
-            Row(
-              children: [
-                const Icon(Icons.access_time, size: 12, color: Colors.black45),
-                const SizedBox(width: 4),
-                Text(
-                  formatDateISO(article.publishedAt!),
-                  style:
-                      const TextStyle(fontSize: 11, color: Colors.black45),
-                ),
-              ],
-            ),
-        ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
@@ -742,32 +998,81 @@ class _OwnerActions extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isPending) {
       return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8),
+        padding: EdgeInsets.symmetric(vertical: 8),
         child: SizedBox(
-          width: 20,
-          height: 20,
+          width: 18,
+          height: 18,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       );
     }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Row(
       children: [
-        GestureDetector(
+        _ActionButton(
+          icon: Icons.edit_outlined,
+          label: 'Edit Title',
           onTap: onEdit,
-          child: const Padding(
-            padding: EdgeInsets.all(6),
-            child: Icon(Icons.edit_outlined, size: 20, color: Colors.black54),
-          ),
         ),
+        const _Divider(),
+        _ActionButton(
+          icon: Icons.edit_outlined,
+          label: 'Edit Desc.',
+          onTap: onEdit,
+        ),
+        const Spacer(),
         GestureDetector(
           onTap: onDelete,
-          child: const Padding(
-            padding: EdgeInsets.all(6),
-            child: Icon(Icons.delete_outline, size: 20, color: Colors.red),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: Icon(Icons.delete_outline,
+                size: 18, color: Colors.red.shade400),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: Colors.black38),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Colors.black45),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Container(width: 1, height: 14, color: Colors.black12),
     );
   }
 }
