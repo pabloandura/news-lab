@@ -15,6 +15,7 @@ import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/re
 import 'package:news_lab/features/daily_news/presentation/bloc/article/remote/remote_article_state.dart';
 import 'package:news_lab/features/daily_news/presentation/widgets/article_tile.dart';
 import 'package:news_lab/features/daily_news/presentation/widgets/featured_article_card.dart';
+import 'package:news_lab/shared/widgets/empty_state_widget.dart';
 
 String _articleKey(ArticleEntity article) {
   if (article.remoteId != null && article.remoteId!.isNotEmpty) {
@@ -213,7 +214,17 @@ class ArticleListBody extends StatelessWidget {
                 .toList();
           }
           if (articles.isEmpty) {
-            return const Center(child: Text('No articles found.'));
+            return EmptyStateWidget(
+              icon: searchQuery.isNotEmpty
+                  ? Icons.search_off_outlined
+                  : Icons.newspaper_outlined,
+              message: searchQuery.isNotEmpty
+                  ? 'No results for "$searchQuery"'
+                  : 'No articles yet',
+              hint: searchQuery.isNotEmpty
+                  ? 'Try a different search term'
+                  : 'Check back soon for the latest news',
+            );
           }
           return ListView.builder(
             itemCount: articles.length,

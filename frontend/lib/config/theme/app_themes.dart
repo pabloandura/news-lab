@@ -6,6 +6,11 @@ ThemeData theme() {
     fontFamily: 'Muli',
     appBarTheme: appBarTheme(),
     colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+    inputDecorationTheme: const InputDecorationTheme(
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.black, width: 2),
+      ),
+    ),
   );
 }
 

@@ -21,6 +21,7 @@ import 'package:news_lab/features/journalist_profile/presentation/bloc/profile_s
 import 'package:news_lab/features/journalist_profile/presentation/bloc/profile_stats_event.dart';
 import 'package:news_lab/features/journalist_profile/presentation/bloc/profile_stats_state.dart';
 import 'package:news_lab/injection_container.dart';
+import 'package:news_lab/shared/widgets/empty_state_widget.dart';
 
 class JournalistProfilePage extends StatelessWidget {
   final JournalistProfileArgs args;
@@ -98,15 +99,62 @@ class JournalistProfilePage extends StatelessWidget {
 
 // ── My Articles tab ───────────────────────────────────────────────────────────
 
-class _MyArticlesTab extends StatelessWidget {
+class _MyArticlesTab extends StatefulWidget {
   final JournalistProfileArgs args;
   const _MyArticlesTab({required this.args});
 
   @override
+  State<_MyArticlesTab> createState() => _MyArticlesTabState();
+}
+
+class _MyArticlesTabState extends State<_MyArticlesTab> {
+  final _listKey = GlobalKey<AnimatedListState>();
+  List<ArticleEntity> _items = [];
+  bool _initialized = false;
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<JournalistProfileBloc, JournalistProfileState>(
+    return BlocConsumer<JournalistProfileBloc, JournalistProfileState>(
+      listener: (context, state) {
+        final articles = _articlesFrom(state);
+        if (articles == null) return;
+
+        if (!_initialized) {
+          setState(() {
+            _items = articles.toList();
+            _initialized = true;
+          });
+          return;
+        }
+
+        // Animate removals
+        for (int i = _items.length - 1; i >= 0; i--) {
+          final item = _items[i];
+          if (!articles.any((a) => a.remoteId == item.remoteId)) {
+            final removed = item;
+            final removedIndex = i;
+            _listKey.currentState?.removeItem(
+              removedIndex,
+              (ctx, animation) => _buildAnimatedRow(removed, animation, null, null),
+              duration: const Duration(milliseconds: 300),
+            );
+            setState(() => _items.removeAt(removedIndex));
+          }
+        }
+
+        // Sync updates (title/description changes)
+        for (int i = 0; i < articles.length; i++) {
+          if (i < _items.length &&
+              _items[i].remoteId == articles[i].remoteId) {
+            if (_items[i].title != articles[i].title ||
+                _items[i].description != articles[i].description) {
+              setState(() => _items[i] = articles[i]);
+            }
+          }
+        }
+      },
       builder: (context, state) {
-        if (state is JournalistProfileLoading) {
+        if (state is JournalistProfileLoading && !_initialized) {
           return const Center(child: CupertinoActivityIndicator());
         }
         if (state is JournalistProfileError) {
@@ -122,58 +170,65 @@ class _MyArticlesTab extends StatelessWidget {
           );
         }
 
-        final articles = _articlesFrom(state);
-        final pendingDeleteId =
-            state is JournalistProfileLoaded ? state.pendingDeleteId : null;
-        final pendingUpdateId =
-            state is JournalistProfileLoaded ? state.pendingUpdateId : null;
-
-        if (articles == null) {
+        if (!_initialized) {
           return const Center(child: CupertinoActivityIndicator());
         }
 
-        if (articles.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.article_outlined, size: 56, color: Colors.black26),
-                SizedBox(height: 12),
-                Text('No articles published yet',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black54)),
-                SizedBox(height: 6),
-                Text('Articles you publish will appear here',
-                    style: TextStyle(fontSize: 13, color: Colors.black38)),
-              ],
-            ),
+        if (_items.isEmpty) {
+          return const EmptyStateWidget(
+            icon: Icons.article_outlined,
+            message: 'No articles published yet',
+            hint: 'Articles you publish will appear here',
           );
         }
 
-        return ListView.builder(
-          itemCount: articles.length,
-          itemBuilder: (context, index) {
-            final article = articles[index];
-            return _ArticleRow(
-              article: article,
-              isOwner: args.isOwner,
-              isPendingDelete: pendingDeleteId == article.remoteId,
-              isPendingUpdate: pendingUpdateId == article.remoteId,
-              onDelete: () => context
-                  .read<JournalistProfileBloc>()
-                  .add(DeleteArticleRequested(article.remoteId!)),
-              onEdit: () => _openEditSheet(context, article),
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.articleDetails,
-                arguments: article,
-              ),
-            );
+        final pendingDeleteId = state is JournalistProfileLoaded
+            ? state.pendingDeleteId
+            : null;
+        final pendingUpdateId = state is JournalistProfileLoaded
+            ? state.pendingUpdateId
+            : null;
+
+        return AnimatedList(
+          key: _listKey,
+          initialItemCount: _items.length,
+          itemBuilder: (context, index, animation) {
+            if (index >= _items.length) return const SizedBox.shrink();
+            final article = _items[index];
+            return _buildAnimatedRow(
+                article, animation, pendingDeleteId, pendingUpdateId);
           },
         );
       },
+    );
+  }
+
+  Widget _buildAnimatedRow(
+    ArticleEntity article,
+    Animation<double> animation,
+    String? pendingDeleteId,
+    String? pendingUpdateId,
+  ) {
+    return SizeTransition(
+      sizeFactor: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+      child: FadeTransition(
+        opacity: animation,
+        child: _ArticleRow(
+          article: article,
+          isOwner: widget.args.isOwner,
+          isPendingDelete: pendingDeleteId == article.remoteId,
+          isPendingUpdate: pendingUpdateId == article.remoteId,
+          onDelete: () => context
+              .read<JournalistProfileBloc>()
+              .add(DeleteArticleRequested(article.remoteId!)),
+          onEdit: () => _openEditSheet(article),
+          onTap: () => Navigator.pushNamed(
+            context,
+            AppRoutes.articleDetails,
+            arguments: article,
+          ),
+        ),
+      ),
     );
   }
 
@@ -184,7 +239,7 @@ class _MyArticlesTab extends StatelessWidget {
     return null;
   }
 
-  void _openEditSheet(BuildContext context, ArticleEntity article) {
+  void _openEditSheet(ArticleEntity article) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

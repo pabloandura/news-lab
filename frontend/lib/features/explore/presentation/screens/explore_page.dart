@@ -16,6 +16,7 @@ import 'package:news_lab/features/explore/presentation/bloc/trending_articles_st
 import 'package:news_lab/features/explore/presentation/cubit/bias_landscape_cubit.dart';
 import 'package:news_lab/features/explore/presentation/cubit/bias_landscape_state.dart';
 import 'package:news_lab/injection_container.dart';
+import 'package:news_lab/shared/widgets/empty_state_widget.dart';
 
 class ExplorePage extends HookWidget {
   const ExplorePage({super.key});
@@ -364,9 +365,19 @@ class _TrendingSection extends StatelessWidget {
                 .toList();
           }
           if (articles.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(child: Text('No trending articles.')),
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: EmptyStateWidget(
+                icon: searchQuery.isNotEmpty
+                    ? Icons.search_off_outlined
+                    : Icons.trending_up_outlined,
+                message: searchQuery.isNotEmpty
+                    ? 'No results for "$searchQuery"'
+                    : 'No trending articles',
+                hint: searchQuery.isNotEmpty
+                    ? 'Try a different search term'
+                    : 'Check back later for trending stories',
+              ),
             );
           }
           return Column(
