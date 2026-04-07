@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
+const kAppOrange = Color(0xFFE8621A);
+
 ThemeData theme() {
   return ThemeData(
     scaffoldBackgroundColor: Colors.white,
     fontFamily: 'Muli',
     appBarTheme: appBarTheme(),
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
+    colorScheme: ColorScheme.fromSeed(seedColor: kAppOrange),
     inputDecorationTheme: const InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.black, width: 2),
+        borderSide: BorderSide(color: kAppOrange, width: 2),
       ),
     ),
   );

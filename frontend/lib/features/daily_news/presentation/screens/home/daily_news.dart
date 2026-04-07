@@ -64,8 +64,30 @@ class DailyNews extends HookWidget {
                     style: const TextStyle(color: Colors.black),
                     onChanged: (v) => searchQuery.value = v,
                   )
-                : const Text('Daily News',
-                    style: TextStyle(color: Colors.black)),
+                : RichText(
+                    text: TextSpan(
+                      children: [
+                        const TextSpan(
+                          text: 'news',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'lab',
+                          style: TextStyle(
+                            color: const Color(0xFFE8621A),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
             actions: [
               if (searchActive.value)
                 IconButton(
@@ -165,9 +187,11 @@ class _FilterChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? Colors.black : Colors.transparent,
+          color: selected ? const Color(0xFFE8621A) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? Colors.black : Colors.black26),
+          border: Border.all(
+            color: selected ? const Color(0xFFE8621A) : Colors.black26,
+          ),
         ),
         child: Text(
           label,
@@ -337,7 +361,7 @@ class _TickerBanner extends HookWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        color: Colors.red.shade700,
+        color: Colors.grey.shade100,
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
@@ -346,13 +370,13 @@ class _TickerBanner extends HookWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFFE8621A),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Text(
                 'BREAKING',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: Colors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w900,
                 ),
@@ -367,7 +391,7 @@ class _TickerBanner extends HookWidget {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black87,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
